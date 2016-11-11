@@ -1,6 +1,7 @@
 package com.szymon;
 
 import com.szymon.Entity.UserEntity;
+import com.szymon.Texts.RoleEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class AuthenticationMsApplicationTests {
 
 	@Test
 	public void registerNewUser(){
-//	UserEntity user = new UserEntity("Jan", "Kowalski", "USER");
+	UserEntity user = new UserEntity("Jan", "Kowalski", RoleEnum.USER);
 
 	}
 
