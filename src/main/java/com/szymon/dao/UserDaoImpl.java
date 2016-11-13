@@ -24,6 +24,13 @@ public class UserDaoImpl implements UserDao {
         datastore.delete(user);
     }
 
+    @Override
+    public User findByLogin(String login) {
+        Query<User> query = datastore.find(User.class);
+        query.criteria("login").equal(login);
+        return query.get();
+    }
+
     public List<User> findByNameAndSurname(String name, String surname) {
         Query<User> query = datastore.find(User.class);
         query.or(
