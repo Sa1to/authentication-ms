@@ -17,12 +17,14 @@ public class User {
 
     @Id
     private ObjectId id;
+    private String login;
     private String name;
     private String surname;
     private String password;
     private RoleEnum role;
 
-    public User(String name, String surname, String password, RoleEnum role) {
+    public User(String login, String name, String surname, String password, RoleEnum role) {
+        this.login = login;
         this.name = name;
         this.surname = surname;
         this.password = password;
