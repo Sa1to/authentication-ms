@@ -45,11 +45,13 @@ public class UserDaoTests {
 
     @Test
     public void testFindByLogin(){
-//        Mockito.stub(user.getLogin()).toReturn("login");
-        userDao.findByLogin("login");
+        Mockito.stub(datastore.find(User.class)).toReturn(query);
+        Mockito.stub(query.criteria("login")).toReturn(fieldEnd);
+        Mockito.stub(fieldEnd.equal(user.getLogin())).toReturn(user);
+        userDao.findByLogin(user.getLogin());
         Mockito.verify(datastore).find(User.class);
         Mockito.verify(query).criteria("login");
-//        Mockito.verify(fieldEnd).equal(user.getLogin());
+        Mockito.verify(fieldEnd).equal(user.getLogin());
         Mockito.verify(query).get();
 
     }
