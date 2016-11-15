@@ -8,7 +8,8 @@ import java.util.List;
 @Repository
 public interface UserDao {
     void saveWithHashedPassword(User user);
-    List<User> findByNameAndSurname(String name, String surname);
-    void delete(User user);
+
+//    List<User> findByNameAndSurname(String name, String surname);
+
     User findByLogin(String login);
 }
