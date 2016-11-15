@@ -2,7 +2,9 @@ package com.szymon.service;
 
 import com.auth0.jwt.JWTSigner;
 import com.auth0.jwt.internal.com.fasterxml.jackson.core.JsonToken;
+import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
+import com.szymon.entity.Token;
 import com.szymon.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +25,13 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private TokenDao tokenDao;
+
     @Override
     public boolean authenticateUser(String login, String password) {
         User user = userDao.findByLogin(login);
-        return(BCrypt.checkpw(password,user.getPassword()));
+        return user != null && (BCrypt.checkpw(password, user.getPassword()));
     }
 
     @Override
@@ -39,8 +44,12 @@ public class UserAuthServiceImpl implements UserAuthService {
         claims.put("iss", issuer);
         claims.put("exp", exp);
         claims.put("iat", iat);
+        claims.put("login", user.getLogin());
         claims.put("role", user.getRole());
 
-        return signer.sign(claims);
+        String jwt = signer.sign(claims);
+        tokenDao.save(new Token(user.getId(),jwt));
+        
+        return jwt;
     }
 }
