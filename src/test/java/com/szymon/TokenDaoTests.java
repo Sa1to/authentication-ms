@@ -1,6 +1,5 @@
 package com.szymon;
 
-import com.szymon.dao.TokenDao;
 import com.szymon.dao.TokenDaoImpl;
 import com.szymon.entity.Token;
 import org.junit.Before;

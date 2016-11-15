@@ -11,10 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.Query;
-import org.springframework.boot.test.context.SpringBootTest;
 
-
-@SpringBootTest
 public class UserDaoTests {
 
     @Mock
@@ -33,18 +30,18 @@ public class UserDaoTests {
     private User user;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testSavingWithHashedPassword(){
+    public void testSavingWithHashedPassword() {
         userDao.saveWithHashedPassword(user);
         Mockito.verify(datastore).save(user);
     }
 
     @Test
-    public void testFindByLogin(){
+    public void testFindByLogin() {
         Mockito.stub(datastore.find(User.class)).toReturn(query);
         Mockito.stub(query.criteria("login")).toReturn(fieldEnd);
         Mockito.stub(fieldEnd.equal(user.getLogin())).toReturn(user);
@@ -55,5 +52,4 @@ public class UserDaoTests {
         Mockito.verify(query).get();
 
     }
-
 }
