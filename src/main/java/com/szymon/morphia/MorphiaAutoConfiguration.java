@@ -18,8 +18,10 @@ public class MorphiaAutoConfiguration {
     private static final String port = "27017";
     private static final String dbname = "auth-ms-db";
 
-    public @Bean MongoClient mongoClient() throws UnknownHostException {
-        return (new MongoClient(host+":"+port));
+    public
+    @Bean
+    MongoClient mongoClient() throws UnknownHostException {
+        return (new MongoClient(host + ":" + port));
     }
 
     @Bean
@@ -31,12 +33,14 @@ public class MorphiaAutoConfiguration {
         return datastore;
     }
 
-    public @Bean
+    public
+    @Bean
     MongoDbFactory mongoDbFactory() throws UnknownHostException {
         return new SimpleMongoDbFactory(mongoClient(), dbname);
     }
 
-    public @Bean
+    public
+    @Bean
     MongoTemplate mongoTemplate() throws UnknownHostException {
         MongoTemplate mongoTemplate = new MongoTemplate(mongoDbFactory());
         return mongoTemplate;
