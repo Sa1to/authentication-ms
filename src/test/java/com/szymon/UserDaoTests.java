@@ -1,9 +1,13 @@
 package com.szymon;
 
+import com.szymon.Texts.RoleEnum;
+import com.szymon.dao.UserDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.entity.User;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -11,7 +15,12 @@ import org.mockito.MockitoAnnotations;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class UserDaoTests {
 
     @Mock
@@ -24,18 +33,20 @@ public class UserDaoTests {
     private Datastore datastore;
 
     @InjectMocks
-    private UserDaoImpl userDao;
+    private UserDao userDao = new UserDaoImpl();
 
-    @Mock
     private User user;
+    private String password = RandomStringUtils.random(7);
 
     @Before
-    public void setUp() {
+    public void setup() {
         MockitoAnnotations.initMocks(this);
+        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER);
     }
 
     @Test
     public void testSavingWithHashedPassword() {
+        Mockito.stub(datastore.save(user)).toReturn(null);
         userDao.saveWithHashedPassword(user);
         Mockito.verify(datastore).save(user);
     }
