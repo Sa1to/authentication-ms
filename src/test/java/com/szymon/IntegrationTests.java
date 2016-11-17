@@ -3,6 +3,7 @@ package com.szymon;
 
 import com.szymon.Texts.Responses;
 import com.szymon.controller.UserController;
+import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.entity.User;
@@ -36,6 +37,9 @@ public class IntegrationTests {
     @Autowired
     private Datastore datastore;
 
+    @Autowired
+    private TokenDao tokenDao;
+
     private String password = RandomStringUtils.random(7);
     private User user;
 
@@ -60,6 +64,8 @@ public class IntegrationTests {
     public void loginAsUserTest() {
         userDao.saveWithHashedPassword(user);
         ResponseEntity response = userController.loginController(user.getLogin(), password);
+        String token = response.getBody().toString();
+        assert (tokenDao.findByUserId(user.getId()).getToken().equals(token));
         assert (!response.getBody().equals(Responses.WRONG_CREDENTIALS));
         assert (response.getStatusCode().equals(HttpStatus.OK));
     }
