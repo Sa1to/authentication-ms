@@ -1,11 +1,11 @@
 package com.szymon.service;
 
 import com.auth0.jwt.JWTSigner;
-import com.auth0.jwt.internal.com.fasterxml.jackson.core.JsonToken;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
 import com.szymon.entity.Token;
 import com.szymon.entity.User;
+import com.szymon.jwt.JWTFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -28,6 +28,9 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Autowired
     private TokenDao tokenDao;
 
+    @Autowired
+    private JWTFactory jwtFactory;
+
     @Override
     public boolean authenticateUser(String login, String password) {
         User user = userDao.findByLogin(login);
@@ -39,8 +42,9 @@ public class UserAuthServiceImpl implements UserAuthService {
         final long iat = System.currentTimeMillis() / 1000L; // issued at claim
         final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
 
-        final JWTSigner signer = new JWTSigner(secret);
-        final HashMap<String, Object> claims = new HashMap<String, Object>();
+        JWTSigner signer = jwtFactory.createJWTSigner(secret);
+
+        HashMap<String, Object> claims = new HashMap<String, Object>();
         claims.put("iss", issuer);
         claims.put("exp", exp);
         claims.put("iat", iat);
@@ -48,7 +52,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         claims.put("role", user.getRole());
 
         String jwt = signer.sign(claims);
-        tokenDao.save(new Token(user.getId(),jwt));
+        tokenDao.save(jwtFactory.createToken(user.getId(),jwt));
         
         return jwt;
     }
