@@ -2,7 +2,9 @@ package com.szymon;
 
 import com.auth0.jwt.JWTSigner;
 import com.szymon.Texts.RoleEnum;
+import com.szymon.dao.TokenDao;
 import com.szymon.dao.TokenDaoImpl;
+import com.szymon.dao.UserDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.entity.Token;
 import com.szymon.entity.User;
@@ -24,10 +26,10 @@ import static org.mockito.Matchers.any;
 public class UserAuthServiceTests {
 
     @Mock
-    private UserDaoImpl userDao;
+    private UserDao userDao;
 
     @Mock
-    private TokenDaoImpl tokenDao;
+    private TokenDao tokenDao;
 
     @Mock
     private JWTSigner signer;
