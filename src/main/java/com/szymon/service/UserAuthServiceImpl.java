@@ -1,6 +1,7 @@
 package com.szymon.service;
 
 import com.auth0.jwt.JWTSigner;
+import com.szymon.Texts.Responses;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
 import com.szymon.entity.Token;
@@ -8,6 +9,8 @@ import com.szymon.entity.User;
 import com.szymon.jwt.JWTFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +35,14 @@ public class UserAuthServiceImpl implements UserAuthService {
     private JWTFactory jwtFactory;
 
     @Override
-    public boolean authenticateUser(String login, String password) {
+    public ResponseEntity authenticateUser(String login, String password) {
         User user = userDao.findByLogin(login);
-        return user != null && (BCrypt.checkpw(password, user.getPassword()));
+        if (user == null || !(BCrypt.checkpw(password, user.getPassword())))
+            return new ResponseEntity(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
+        else if (!user.isActive())
+            return new ResponseEntity(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
+        else
+            return new ResponseEntity(createToken(userDao.findByLogin(login)), HttpStatus.OK);
     }
 
     @Override
@@ -52,8 +60,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         claims.put("role", user.getRole());
 
         String jwt = signer.sign(claims);
-        tokenDao.save(jwtFactory.createToken(user.getId(),jwt));
-        
+        tokenDao.save(jwtFactory.createToken(user.getId(), jwt));
+
         return jwt;
     }
 }
