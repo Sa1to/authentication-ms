@@ -22,8 +22,8 @@ public class UserController {
     private UserDao userDao;
 
     @RequestMapping(Urls.LOGIN)
-    public ResponseEntity loginController(@RequestParam("login") String login,
-                                          @RequestParam("password") String password) {
+    public ResponseEntity loginUser(@RequestParam("login") String login,
+                                    @RequestParam("password") String password) {
         if (userAuthService.authenticateUser(login, password))
             return new ResponseEntity(userAuthService.createToken(userDao.findByLogin(login)), HttpStatus.OK);
         else
