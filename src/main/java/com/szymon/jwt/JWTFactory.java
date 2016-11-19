@@ -7,10 +7,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JWTFactory {
-    public JWTSigner createJWTSigner(String secret){
+    public JWTSigner createJWTSigner(String secret) {
         return new JWTSigner(secret);
     }
-    public Token createToken(ObjectId userId,String jwt){
-        return new Token(userId,jwt);
+
+    public Token createToken(ObjectId userId, String jwt) {
+        return new Token(userId, jwt);
     }
 }
