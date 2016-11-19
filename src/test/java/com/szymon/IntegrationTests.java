@@ -46,7 +46,7 @@ public class IntegrationTests {
 
     @Before
     public void setup() {
-        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER);
+        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, true);
     }
 
     @Test
@@ -82,8 +82,20 @@ public class IntegrationTests {
     @Test
     public void loginAsUserWithWrongLogin() {
         userDao.saveWithHashedPassword(user);
-        ResponseEntity responseEntity = userController.loginUser("WRONG LOGIN", user.getPassword());
+        ResponseEntity responseEntity = userController.loginUser("WRONG LOGIN", password);
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void loginAsInactiveUser() {
+        User inactiveUser = user;
+        inactiveUser.setActive(false);
+        userDao.saveWithHashedPassword(inactiveUser);
+
+        ResponseEntity responseEntity = userController.loginUser(inactiveUser.getLogin(), password);
+
+        assertEquals(Responses.INACTIVE_USER, responseEntity.getBody().toString());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 

@@ -35,7 +35,7 @@ public class UserDaoTests {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER);
+        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, false);
     }
 
     @Test
