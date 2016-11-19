@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 
 public class UserAuthServiceTests {
@@ -55,7 +56,7 @@ public class UserAuthServiceTests {
         User userWithHashedPassword = new User("jankowalski", "Jan", "Kowalski", BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()), RoleEnum.USER);
         Mockito.stub(userDao.findByLogin(user.getLogin())).toReturn(userWithHashedPassword);
         boolean isAuthenticated = userAuthService.authenticateUser(user.getLogin(), user.getPassword());
-        assert (isAuthenticated);
+        assertTrue(isAuthenticated);
         Mockito.verify(userDao).findByLogin(user.getLogin());
     }
 
