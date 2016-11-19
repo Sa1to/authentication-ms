@@ -3,7 +3,7 @@ package com.szymon;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.UserDao;
 import com.szymon.dao.UserDaoImpl;
-import com.szymon.entity.User;
+import com.szymon.domain.User;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;

@@ -2,7 +2,7 @@ package com.szymon;
 
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.TokenDaoImpl;
-import com.szymon.entity.Token;
+import com.szymon.domain.Token;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;

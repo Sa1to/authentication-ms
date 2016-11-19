@@ -1,7 +1,7 @@
 package com.szymon.jwt;
 
 import com.auth0.jwt.JWTSigner;
-import com.szymon.entity.Token;
+import com.szymon.domain.Token;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 

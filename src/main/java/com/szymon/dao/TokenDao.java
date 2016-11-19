@@ -1,6 +1,6 @@
 package com.szymon.dao;
 
-import com.szymon.entity.Token;
+import com.szymon.domain.Token;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 

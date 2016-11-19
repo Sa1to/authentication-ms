@@ -1,7 +1,6 @@
 package com.szymon.service;
 
-import com.auth0.jwt.internal.com.fasterxml.jackson.core.JsonToken;
-import com.szymon.entity.User;
+import com.szymon.domain.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

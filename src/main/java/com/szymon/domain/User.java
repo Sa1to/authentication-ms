@@ -1,4 +1,4 @@
-package com.szymon.entity;
+package com.szymon.domain;
 
 
 import com.szymon.Texts.RoleEnum;

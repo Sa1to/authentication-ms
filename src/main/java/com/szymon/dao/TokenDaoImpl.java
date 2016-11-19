@@ -1,6 +1,6 @@
 package com.szymon.dao;
 
-import com.szymon.entity.Token;
+import com.szymon.domain.Token;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.FieldEnd;

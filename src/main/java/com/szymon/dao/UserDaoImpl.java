@@ -1,6 +1,6 @@
 package com.szymon.dao;
 
-import com.szymon.entity.User;
+import com.szymon.domain.User;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.Query;

@@ -5,7 +5,7 @@ import com.szymon.Texts.Responses;
 import com.szymon.controller.UserController;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
-import com.szymon.entity.User;
+import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;

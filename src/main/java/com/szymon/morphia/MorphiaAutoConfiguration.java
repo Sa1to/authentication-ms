@@ -26,7 +26,7 @@ public class MorphiaAutoConfiguration {
     @Bean
     public Datastore datastore() throws UnknownHostException {
         Morphia morphia = new Morphia();
-        morphia.mapPackage("com.szymon.entity");
+        morphia.mapPackage("com.szymon.domain");
         Datastore datastore = morphia.createDatastore(mongoClient(), dbname);
         datastore.ensureIndexes();
         return datastore;
