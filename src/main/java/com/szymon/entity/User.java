@@ -22,12 +22,14 @@ public class User {
     private String surname;
     private String password;
     private RoleEnum role;
+    private boolean active;
 
-    public User(String login, String name, String surname, String password, RoleEnum role) {
+    public User(String login, String name, String surname, String password, RoleEnum role, boolean active) {
         this.login = login;
         this.name = name;
         this.surname = surname;
         this.password = password;
         this.role = role;
+        this.active = active;
     }
 }
