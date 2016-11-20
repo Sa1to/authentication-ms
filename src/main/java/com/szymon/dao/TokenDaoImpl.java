@@ -16,7 +16,7 @@ public class TokenDaoImpl extends AbstractDao<Token> implements TokenDao {
     private Query<Token> query;
 
     private FieldEnd fieldEnd;
-    
+
     @Override
     public Token findByUserId(ObjectId userId) {
         query = datastore.find(Token.class);

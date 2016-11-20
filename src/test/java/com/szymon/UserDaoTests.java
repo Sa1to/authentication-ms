@@ -41,7 +41,7 @@ public class UserDaoTests {
     @Test
     public void testSavingWithHashedPassword() {
         Mockito.stub(datastore.save(user)).toReturn(null);
-        userDao.saveWithHashedPassword(user);
+        userDao.save(user);
         Mockito.verify(datastore).save(user);
     }
 

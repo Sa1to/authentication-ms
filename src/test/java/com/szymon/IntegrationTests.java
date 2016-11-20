@@ -55,7 +55,7 @@ public class IntegrationTests {
 
     @Test
     public void writeUserToDatabaseTest() {
-        userDao.saveWithHashedPassword(user);
+        userDao.save(user);
         User retrievedUser = userDao.findByLogin(user.getLogin());
         assertNotEquals(user.getPassword(), password);
         assertTrue(BCrypt.checkpw(password, retrievedUser.getPassword()));
@@ -63,7 +63,7 @@ public class IntegrationTests {
 
     @Test
     public void loginAsUserTest() {
-        userDao.saveWithHashedPassword(user);
+        userDao.save(user);
         ResponseEntity response = userController.loginUser(user.getLogin(), password);
         String token = response.getBody().toString();
         assertEquals(token, tokenDao.findByUserId(user.getId()).getToken());
@@ -73,7 +73,7 @@ public class IntegrationTests {
 
     @Test
     public void loginAsUserWithWrongPassword() {
-        userDao.saveWithHashedPassword(user);
+        userDao.save(user);
         ResponseEntity responseEntity = userController.loginUser(user.getLogin(), "WRONG PASSWORD");
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -81,7 +81,7 @@ public class IntegrationTests {
 
     @Test
     public void loginAsUserWithWrongLogin() {
-        userDao.saveWithHashedPassword(user);
+        userDao.save(user);
         ResponseEntity responseEntity = userController.loginUser("WRONG LOGIN", password);
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -91,7 +91,7 @@ public class IntegrationTests {
     public void loginAsInactiveUser() {
         User inactiveUser = user;
         inactiveUser.setActive(false);
-        userDao.saveWithHashedPassword(inactiveUser);
+        userDao.save(inactiveUser);
 
         ResponseEntity responseEntity = userController.loginUser(inactiveUser.getLogin(), password);
 
