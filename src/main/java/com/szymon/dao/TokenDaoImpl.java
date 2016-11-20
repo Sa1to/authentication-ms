@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class TokenDaoImpl extends AbstractDao<Token> implements TokenDao {
+public class TokenDaoImpl extends AbstractDaoImpl<Token> implements TokenDao {
     @Autowired
     private Datastore datastore;
 
