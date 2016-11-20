@@ -4,6 +4,7 @@ import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.UserDao;
 import com.szymon.domain.User;
+import com.szymon.service.RegistrationCodeService;
 import com.szymon.service.RegistrationValidation;
 import com.szymon.service.RegistrationValidator;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 
 public class RegistrationValidatorTests {
 
+    @Mock
+    private RegistrationCodeService registrationCodeService;
 
     @Mock
     private UserDao userDao;
@@ -41,6 +44,7 @@ public class RegistrationValidatorTests {
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         Mockito.verify(userDao).findByLogin(userToRegister.getLogin());
+        Mockito.verify(registrationCodeService).createAndSave(userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
@@ -80,6 +84,20 @@ public class RegistrationValidatorTests {
         userToRegister.setPassword("shortpa");
 
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());
+
+        userToRegister.setPassword("n0uppercase");
+
+        responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());
+
+        userToRegister.setPassword("noNumber");
+
+        responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());

@@ -99,7 +99,6 @@ public class IntegrationTests {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
-
     @After
     public void shutdown() {
         datastore.getDB().dropDatabase();
