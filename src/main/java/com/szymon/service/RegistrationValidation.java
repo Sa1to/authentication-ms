@@ -16,6 +16,9 @@ public class RegistrationValidation implements RegistrationValidator {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private RegistrationCodeService registrationCodeService;
+
     @Override
     public ResponseEntity validateUserToRegistration(User user) {
 
@@ -33,7 +36,7 @@ public class RegistrationValidation implements RegistrationValidator {
             return new ResponseEntity(Responses.USER_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
         }
 
-
+        registrationCodeService.createAndSave(user);
         return new ResponseEntity(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
     }
 
