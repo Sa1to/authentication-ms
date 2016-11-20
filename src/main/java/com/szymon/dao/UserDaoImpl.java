@@ -9,7 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class UserDaoImpl implements UserDao {
+public class UserDaoImpl extends AbstractDao<User> implements UserDao {
 
     @Autowired
     private Datastore datastore;
@@ -18,7 +18,7 @@ public class UserDaoImpl implements UserDao {
 
     private FieldEnd fieldEnd;
 
-    public void saveWithHashedPassword(User user) {
+    public void save(User user) {
         user.setPassword(hashPassword(user.getPassword()));
         datastore.save(user);
     }
