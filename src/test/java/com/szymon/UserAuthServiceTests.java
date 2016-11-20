@@ -42,7 +42,7 @@ public class UserAuthServiceTests {
     private UserAuthService userAuthService = new UserAuthServiceImpl();
 
     private User user;
-    private String password = RandomStringUtils.random(7);
+    private String password = RandomStringUtils.random(7, true, true);
     private String testSecret = "testSecret";
 
     @Before
