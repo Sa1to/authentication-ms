@@ -3,8 +3,10 @@ package com.szymon;
 
 import com.szymon.Texts.Responses;
 import com.szymon.controller.UserController;
+import com.szymon.dao.RegistrationCodeDao;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
+import com.szymon.domain.RegistrationCode;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,9 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 @RunWith(SpringRunner.class)
@@ -41,12 +41,15 @@ public class IntegrationTests {
     @Autowired
     private TokenDao tokenDao;
 
-    private String password = RandomStringUtils.random(7);
+    @Autowired
+    private RegistrationCodeDao registrationCodeDao;
+
+    private String password = RandomStringUtils.random(10, true, true);
     private User user;
 
     @Before
     public void setup() {
-        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, true);
+        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, false);
     }
 
     @Test
@@ -63,6 +66,7 @@ public class IntegrationTests {
 
     @Test
     public void loginAsUserTest() {
+        user.setActive(true);
         userDao.save(user);
         ResponseEntity response = userController.loginUser(user.getLogin(), password);
         String token = response.getBody().toString();
@@ -97,6 +101,16 @@ public class IntegrationTests {
 
         assertEquals(Responses.INACTIVE_USER, responseEntity.getBody().toString());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void registerUser() {
+        userController.registerUser(user);
+
+        RegistrationCode registrationCode = registrationCodeDao.findByUserId(user.getId());
+
+        assertNotNull(registrationCode);
+        assertEquals(registrationCode.getUserId(), user.getId());
     }
 
     @After
