@@ -28,7 +28,7 @@ public class RegistrationValidation implements RegistrationValidator {
         if (!validatePassword(user.getPassword()))
             return new ResponseEntity(Responses.INVALID_PASSWORD, HttpStatus.BAD_REQUEST);
 
-        if(user.isActive())
+        if (user.isActive())
             return new ResponseEntity(Responses.ACTIVE_PARAM_NOT_ALLOWED, HttpStatus.BAD_REQUEST);
 
         User userFromDB = userDao.findByLogin(user.getLogin());
@@ -36,6 +36,7 @@ public class RegistrationValidation implements RegistrationValidator {
             return new ResponseEntity(Responses.USER_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
         }
 
+        userDao.save(user);
         registrationCodeService.createAndSave(user);
         return new ResponseEntity(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
     }
@@ -45,7 +46,7 @@ public class RegistrationValidation implements RegistrationValidator {
     }
 
     private boolean validatePassword(String password) {
-        if(password.length()<8)
+        if (password.length() < 8 || password.length() >= 40)
             return false;
 
         Pattern[] pattern = new Pattern[3];
