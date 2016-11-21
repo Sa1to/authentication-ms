@@ -44,6 +44,7 @@ public class RegistrationValidatorTests {
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         Mockito.verify(userDao).findByLogin(userToRegister.getLogin());
+        Mockito.verify(userDao).save(userToRegister);
         Mockito.verify(registrationCodeService).createAndSave(userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
