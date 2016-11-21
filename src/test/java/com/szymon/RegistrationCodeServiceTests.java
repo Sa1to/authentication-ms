@@ -2,7 +2,6 @@ package com.szymon;
 
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.RegistrationCodeDao;
-import com.szymon.domain.RegistrationCode;
 import com.szymon.domain.User;
 import com.szymon.service.RegistrationCodeService;
 import com.szymon.service.RegistrationCodeServiceImpl;
