@@ -4,7 +4,7 @@ import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.UserDao;
 import com.szymon.domain.User;
-import com.szymon.service.RegistrationCodeService;
+import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidation;
 import com.szymon.service.RegistrationValidator;
 import org.apache.commons.lang.RandomStringUtils;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 public class RegistrationValidatorTests {
 
     @Mock
-    private RegistrationCodeService registrationCodeService;
+    private ActivationCodeService activationCodeService;
 
     @Mock
     private UserDao userDao;
@@ -45,7 +45,7 @@ public class RegistrationValidatorTests {
 
         Mockito.verify(userDao).findByLogin(userToRegister.getLogin());
         Mockito.verify(userDao).save(userToRegister);
-        Mockito.verify(registrationCodeService).createAndSave(userToRegister);
+        Mockito.verify(activationCodeService).createAndSave(userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 

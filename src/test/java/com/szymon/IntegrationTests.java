@@ -3,10 +3,10 @@ package com.szymon;
 
 import com.szymon.Texts.Responses;
 import com.szymon.controller.UserController;
-import com.szymon.dao.RegistrationCodeDao;
+import com.szymon.dao.ActivationCodeDao;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
-import com.szymon.domain.RegistrationCode;
+import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import org.apache.commons.lang.RandomStringUtils;
@@ -42,7 +42,7 @@ public class IntegrationTests {
     private TokenDao tokenDao;
 
     @Autowired
-    private RegistrationCodeDao registrationCodeDao;
+    private ActivationCodeDao activationCodeDao;
 
     private String password = RandomStringUtils.random(10, true, true);
     private User user;
@@ -107,10 +107,10 @@ public class IntegrationTests {
     public void registerUser() {
         userController.registerUser(user);
 
-        RegistrationCode registrationCode = registrationCodeDao.findByUserId(user.getId());
+        ActivationCode activationCode = activationCodeDao.findByUserId(user.getId());
 
-        assertNotNull(registrationCode);
-        assertEquals(registrationCode.getUserId(), user.getId());
+        assertNotNull(activationCode);
+        assertEquals(activationCode.getUserId(), user.getId());
     }
 
     @After
