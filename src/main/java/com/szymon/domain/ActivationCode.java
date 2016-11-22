@@ -11,14 +11,14 @@ import org.mongodb.morphia.annotations.Id;
 @Setter
 @NoArgsConstructor
 @Entity
-public class RegistrationCode {
+public class ActivationCode {
 
     @Id
     private ObjectId id;
     private ObjectId userId;
     private String code;
 
-    public RegistrationCode(ObjectId userId, String code){
+    public ActivationCode(ObjectId userId, String code){
         this.userId = userId;
         this.code = code;
     }

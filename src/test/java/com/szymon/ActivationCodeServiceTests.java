@@ -1,10 +1,10 @@
 package com.szymon;
 
 import com.szymon.Texts.RoleEnum;
-import com.szymon.dao.RegistrationCodeDao;
+import com.szymon.dao.ActivationCodeDao;
 import com.szymon.domain.User;
-import com.szymon.service.RegistrationCodeService;
-import com.szymon.service.RegistrationCodeServiceImpl;
+import com.szymon.service.ActivationCodeService;
+import com.szymon.service.ActivationCodeServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -14,13 +14,13 @@ import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Matchers.any;
 
-public class RegistrationCodeServiceTests {
+public class ActivationCodeServiceTests {
 
     @Mock
-    private RegistrationCodeDao registrationCodeDao;
+    private ActivationCodeDao activationCodeDao;
 
     @InjectMocks
-    private RegistrationCodeService registrationCodeService = new RegistrationCodeServiceImpl();
+    private ActivationCodeService activationCodeService = new ActivationCodeServiceImpl();
     private User userToRegister;
 
     @Before
@@ -31,12 +31,9 @@ public class RegistrationCodeServiceTests {
 
     @Test
     public void createAndSaveTest() {
-        registrationCodeService.createAndSave(userToRegister);
+        activationCodeService.createAndSave(userToRegister);
 
-        Mockito.verify(registrationCodeDao).save(any());
+        Mockito.verify(activationCodeDao).save(any());
     }
-
-//    @Test
-
 
 }
