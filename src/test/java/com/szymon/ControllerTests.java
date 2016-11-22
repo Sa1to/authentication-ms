@@ -87,10 +87,8 @@ public class ControllerTests {
 
     @Test
     public void registerUser() {
-        String login = "testlogin123";
-        String password = "testPassword123";
         String activationCode = "activationCode";
-        User userToRegister = new User("testlogin123", "testName", "testSurname", "testPassword", RoleEnum.USER, false);
+        User userToRegister = new User("testlogin123", "testName", "testSurname", "testPassword123", RoleEnum.USER, false);
 
         Mockito.stub(registrationValidator.validateUserToRegistration(userToRegister)).toReturn(new ResponseEntity(activationCode, HttpStatus.OK));
 

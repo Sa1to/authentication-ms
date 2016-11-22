@@ -54,7 +54,9 @@ public class TokenDaoTests {
         Mockito.stub(datastore.find(Token.class)).toReturn(query);
         Mockito.stub(query.criteria("userId")).toReturn(fieldEnd);
         Mockito.stub(fieldEnd.equal(testUserId)).toReturn(token);
+
         tokenDao.findByUserId(testUserId);
+
         Mockito.verify(datastore).find(Token.class);
         Mockito.verify(query).criteria("userId");
         Mockito.verify(fieldEnd).equal(testUserId);
