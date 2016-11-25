@@ -3,10 +3,12 @@ package com.szymon;
 import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.UserDao;
+import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidation;
 import com.szymon.service.RegistrationValidator;
+import com.szymon.service.mailing.MailingService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +19,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 
 public class RegistrationValidatorTests {
@@ -26,6 +30,9 @@ public class RegistrationValidatorTests {
 
     @Mock
     private UserDao userDao;
+
+    @Mock
+    private MailingService mailingService;
 
     @InjectMocks
     private RegistrationValidator registrationValidator = new RegistrationValidation();
@@ -39,13 +46,17 @@ public class RegistrationValidatorTests {
     }
 
     @Test
-    public void validateCorrectUser() {
+    public void validateCorrectUser() throws IOException {
+        ActivationCode activationCode = new ActivationCode();
+
+        Mockito.stub(activationCodeService.createAndSave(userToRegister)).toReturn(activationCode);
         Mockito.stub(userDao.findByLogin(userToRegister.getLogin())).toReturn(null);
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         Mockito.verify(userDao).findByLogin(userToRegister.getLogin());
         Mockito.verify(userDao).save(userToRegister);
         Mockito.verify(activationCodeService).createAndSave(userToRegister);
+        Mockito.verify(mailingService).sendActivationCode(activationCode,userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
