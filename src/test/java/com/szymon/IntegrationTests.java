@@ -9,7 +9,6 @@ import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
-import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +43,7 @@ public class IntegrationTests {
     @Autowired
     private ActivationCodeDao activationCodeDao;
 
-    private String password = RandomStringUtils.random(10, true, true);
+    private String password = "pAssw0rd";
     private User user;
 
     @Before
