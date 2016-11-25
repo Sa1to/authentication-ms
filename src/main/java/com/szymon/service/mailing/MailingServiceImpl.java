@@ -27,7 +27,7 @@ public class MailingServiceImpl implements MailingService {
     @Override
     public Response sendActivationCode(ActivationCode activationCode, User user) {
         Mail mail = emailFactory.createMail(from, "Activation " + user.getName()
-                + " " + user.getSurname(), to,"To activate user " + user.getLogin() + "user this code: " + activationCode.getCode());
+                + " " + user.getSurname(), to,"To activate user " + user.getLogin() + " use this code: " + activationCode.getCode());
 
         try {
             return sendGrid.api(emailFactory.createRequest(mail));

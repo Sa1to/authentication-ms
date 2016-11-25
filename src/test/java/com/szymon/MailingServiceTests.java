@@ -48,13 +48,13 @@ public class MailingServiceTests {
         Request testRequest = new Request();
 
         Mockito.stub(emailFactory.createMail(testFrom, "Activation " + user.getName()
-                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + "user this code: " + activationCode.getCode())).toReturn(testMail);
+                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: " + activationCode.getCode())).toReturn(testMail);
         Mockito.stub(emailFactory.createRequest(testMail)).toReturn(testRequest);
 
         mailingService.sendActivationCode(activationCode, user);
 
         Mockito.verify(emailFactory).createMail(testFrom, "Activation " + user.getName()
-                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + "user this code: " + activationCode.getCode());
+                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: " + activationCode.getCode());
         Mockito.verify(emailFactory).createRequest(testMail);
         Mockito.verify(sendGrid).api(testRequest);
     }
