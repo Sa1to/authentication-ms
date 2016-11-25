@@ -14,7 +14,9 @@ public class ActivationCodeServiceImpl implements ActivationCodeService {
     private ActivationCodeDao activationCodeDao;
 
     @Override
-    public void createAndSave(User user) {
-        activationCodeDao.save(new ActivationCode(user.getId(), RandomStringUtils.random(20, true, true)));
+    public ActivationCode createAndSave(User user) {
+        ActivationCode activationCode = new ActivationCode(user.getId(), RandomStringUtils.random(20, true, true));
+        activationCodeDao.save(activationCode);
+        return activationCode;
     }
 }

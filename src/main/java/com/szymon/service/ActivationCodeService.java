@@ -1,7 +1,8 @@
 package com.szymon.service;
 
+import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 
 public interface ActivationCodeService {
-    void createAndSave(User user);
+    ActivationCode createAndSave(User user);
 }
