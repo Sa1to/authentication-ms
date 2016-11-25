@@ -2,6 +2,7 @@ package com.szymon;
 
 import com.szymon.Texts.RoleEnum;
 import com.szymon.dao.ActivationCodeDao;
+import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import com.szymon.service.ActivationCodeService;
 import com.szymon.service.ActivationCodeServiceImpl;
@@ -12,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 
 public class ActivationCodeServiceTests {
@@ -31,9 +34,10 @@ public class ActivationCodeServiceTests {
 
     @Test
     public void createAndSaveTest() {
-        activationCodeService.createAndSave(userToRegister);
+        ActivationCode code = activationCodeService.createAndSave(userToRegister);
 
-        Mockito.verify(activationCodeDao).save(any());
+        Mockito.verify(activationCodeDao).save(code);
+        assertNotNull(code.getCode());
     }
 
 }
