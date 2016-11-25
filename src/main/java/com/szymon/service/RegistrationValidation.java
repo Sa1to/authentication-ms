@@ -1,13 +1,17 @@
 package com.szymon.service;
 
+import com.sendgrid.Response;
 import com.szymon.Texts.Responses;
 import com.szymon.dao.UserDao;
+import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
+import com.szymon.service.mailing.MailingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 @Service
@@ -18,6 +22,9 @@ public class RegistrationValidation implements RegistrationValidator {
 
     @Autowired
     private ActivationCodeService activationCodeService;
+
+    @Autowired
+    private MailingService mailingService;
 
     @Override
     public ResponseEntity validateUserToRegistration(User user) {
@@ -37,8 +44,15 @@ public class RegistrationValidation implements RegistrationValidator {
         }
 
         userDao.save(user);
-        activationCodeService.createAndSave(user);
-        return new ResponseEntity(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
+        ActivationCode activationCode = activationCodeService.createAndSave(user);
+        try {
+            mailingService.sendActivationCode(activationCode, user);
+            return new ResponseEntity(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity(e, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     private boolean validateLogin(String login) {
