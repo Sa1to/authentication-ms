@@ -4,6 +4,7 @@ import com.sendgrid.Mail;
 import com.sendgrid.Request;
 import com.sendgrid.SendGrid;
 import com.szymon.Texts.RoleEnum;
+import com.szymon.Texts.Uri;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import com.szymon.service.mailing.EmailFactory;
@@ -32,12 +33,14 @@ public class MailingServiceTests {
 
     private String testTo = "testTo";
     private String testFrom = "testFrom";
+    private String testHost = "testHost";
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ReflectionTestUtils.setField(mailingService, "to", testTo);
         ReflectionTestUtils.setField(mailingService, "from", testFrom);
+        ReflectionTestUtils.setField(mailingService, "host", testHost);
     }
 
     @Test
@@ -48,13 +51,15 @@ public class MailingServiceTests {
         Request testRequest = new Request();
 
         Mockito.stub(emailFactory.createMail(testFrom, "Activation " + user.getName()
-                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: " + activationCode.getCode())).toReturn(testMail);
+                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: "
+                + testHost + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode())).toReturn(testMail);
         Mockito.stub(emailFactory.createRequest(testMail)).toReturn(testRequest);
 
         mailingService.sendActivationCode(activationCode, user);
 
         Mockito.verify(emailFactory).createMail(testFrom, "Activation " + user.getName()
-                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: " + activationCode.getCode());
+                + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: "
+                + testHost + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode());
         Mockito.verify(emailFactory).createRequest(testMail);
         Mockito.verify(sendGrid).api(testRequest);
     }
