@@ -112,6 +112,46 @@ public class IntegrationTests {
         assertEquals(activationCode.getUserId(), user.getId());
     }
 
+    @Test
+    public void activateUser() {
+        String testCode = "testCode";
+
+        User inactiveUser = user;
+        inactiveUser.setActive(false);
+        userDao.save(inactiveUser);
+
+        ActivationCode activationCode = new ActivationCode(inactiveUser.getId(), testCode);
+        activationCodeDao.save(activationCode);
+
+        ResponseEntity responseEntity = userController.activateUser(testCode);
+
+        User activeUser = userDao.findById(inactiveUser.getId());
+
+        assertEquals(Responses.USER_ACTIVATED, responseEntity.getBody().toString());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(activeUser.isActive());
+    }
+
+    @Test
+    public void tryToActivateUserWithWrongCode() {
+        String testCode = "testCode";
+
+        User inactiveUser = user;
+        inactiveUser.setActive(false);
+        userDao.save(inactiveUser);
+
+        ActivationCode activationCode = new ActivationCode(inactiveUser.getId(), testCode);
+        activationCodeDao.save(activationCode);
+
+        ResponseEntity responseEntity = userController.activateUser("wrongCode");
+
+        User activeUser = userDao.findById(inactiveUser.getId());
+
+        assertEquals(Responses.INCORRECT_ACTIVATION_CODE, responseEntity.getBody().toString());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertFalse(activeUser.isActive());
+    }
+
     @After
     public void shutdown() {
         datastore.getDB().dropDatabase();
