@@ -30,8 +30,6 @@ public class ActivationDaoTests {
     @InjectMocks
     private ActivationCodeDao activationCodeDao = new ActivationCodeDaoImpl();
 
-    private ObjectId testUserId = new ObjectId();
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -39,6 +37,8 @@ public class ActivationDaoTests {
 
     @Test
     public void findByUserId() {
+        ObjectId testUserId = new ObjectId();
+
         Mockito.stub(datastore.find(ActivationCode.class)).toReturn(query);
         Mockito.stub(query.criteria("userId")).toReturn(fieldEnd);
         Mockito.stub(fieldEnd.equal(testUserId)).toReturn(activationCode);
@@ -48,6 +48,21 @@ public class ActivationDaoTests {
         Mockito.verify(datastore).find(ActivationCode.class);
         Mockito.verify(query).criteria("userId");
         Mockito.verify(fieldEnd).equal(testUserId);
+        Mockito.verify(query).get();
+    }
+
+    @Test
+    public void findByCode() {
+        String code = "testCode";
+        Mockito.stub(datastore.find(ActivationCode.class)).toReturn(query);
+        Mockito.stub(query.criteria("code")).toReturn(fieldEnd);
+        Mockito.stub(fieldEnd.equal(code)).toReturn(activationCode);
+
+        activationCodeDao.findByCode(code);
+
+        Mockito.verify(datastore).find(ActivationCode.class);
+        Mockito.verify(query).criteria("code");
+        Mockito.verify(fieldEnd).equal(code);
         Mockito.verify(query).get();
     }
 
