@@ -6,4 +6,5 @@ import org.bson.types.ObjectId;
 public interface ActivationCodeDao extends AbstractDao<ActivationCode> {
 
     ActivationCode findByUserId(ObjectId userId);
+    ActivationCode findByCode(String code);
 }

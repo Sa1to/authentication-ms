@@ -24,4 +24,12 @@ public class ActivationCodeDaoImpl extends AbstractDaoImpl<ActivationCode> imple
         fieldEnd.equal(userId);
         return query.get();
     }
+
+    @Override
+    public ActivationCode findByCode(String code) {
+        query = datastore.find(ActivationCode.class);
+        fieldEnd = query.criteria("code");
+        fieldEnd.equal(code);
+        return query.get();
+    }
 }
