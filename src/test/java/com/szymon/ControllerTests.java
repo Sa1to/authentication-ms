@@ -4,6 +4,7 @@ import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.controller.UserController;
 import com.szymon.domain.User;
+import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidator;
 import com.szymon.service.UserAuthService;
 import org.junit.Before;
@@ -25,15 +26,18 @@ public class ControllerTests {
     @Mock
     private RegistrationValidator registrationValidator;
 
+    @Mock
+    private ActivationCodeService activationCodeService;
+
     @InjectMocks
     private UserController userController = new UserController();
 
     private String testCorrectLogin = "testLogin";
     private String testCorrectPassword = "testPassword";
 
-    private ResponseEntity wrongCredentials = new ResponseEntity(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
-    private ResponseEntity inactiveUser = new ResponseEntity(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
-    private ResponseEntity correct = new ResponseEntity("token", HttpStatus.OK);
+    private ResponseEntity wrongCredentials = new ResponseEntity<>(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
+    private ResponseEntity inactiveUser = new ResponseEntity<>(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
+    private ResponseEntity correct = new ResponseEntity<>("token", HttpStatus.OK);
 
     @Before
     public void setUp() {
@@ -90,13 +94,26 @@ public class ControllerTests {
         String activationCode = "activationCode";
         User userToRegister = new User("testlogin123", "testName", "testSurname", "testPassword123", RoleEnum.USER, false);
 
-        Mockito.stub(registrationValidator.validateUserToRegistration(userToRegister)).toReturn(new ResponseEntity(activationCode, HttpStatus.OK));
+        Mockito.stub(registrationValidator.validateUserToRegistration(userToRegister)).toReturn(new ResponseEntity<>(activationCode, HttpStatus.OK));
 
         ResponseEntity responseEntity = userController.registerUser(userToRegister);
 
         Mockito.verify(registrationValidator).validateUserToRegistration(userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(activationCode, responseEntity.getBody().toString());
+    }
+
+    @Test
+    public void activateUser() {
+        String activationCode = "activationCode";
+        ResponseEntity expectedResponse = new ResponseEntity<>(Responses.USER_ACTIVATED, HttpStatus.OK);
+
+        Mockito.stub(activationCodeService.activateUser(activationCode)).toReturn(expectedResponse);
+
+        ResponseEntity responseEntity = userController.activateUser(activationCode);
+
+        Mockito.verify(activationCodeService).activateUser(activationCode);
+        assertEquals(expectedResponse, responseEntity);
     }
 
 }
