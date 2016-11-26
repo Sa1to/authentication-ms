@@ -37,11 +37,11 @@ public class UserAuthServiceImpl implements UserAuthService {
     public ResponseEntity authenticateUser(String login, String password) {
         User user = userDao.findByLogin(login);
         if (user == null || !(BCrypt.checkpw(password, user.getPassword())))
-            return new ResponseEntity(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
         else if (!user.isActive())
-            return new ResponseEntity(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
         else
-            return new ResponseEntity(createToken(userDao.findByLogin(login)), HttpStatus.OK);
+            return new ResponseEntity<>(createToken(userDao.findByLogin(login)), HttpStatus.OK);
     }
 
     @Override

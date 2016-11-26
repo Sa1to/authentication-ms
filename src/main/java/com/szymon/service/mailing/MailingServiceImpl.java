@@ -1,6 +1,7 @@
 package com.szymon.service.mailing;
 
 import com.sendgrid.*;
+import com.szymon.Texts.Uri;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,14 @@ public class MailingServiceImpl implements MailingService {
     @Value("${mail.send.from}")
     String from;
 
+    @Value("${host.address}")
+    String host;
+
     @Override
     public Response sendActivationCode(ActivationCode activationCode, User user) {
         Mail mail = emailFactory.createMail(from, "Activation " + user.getName()
-                + " " + user.getSurname(), to,"To activate user " + user.getLogin() + " use this code: " + activationCode.getCode());
+                + " " + user.getSurname(), to, "To activate user " + user.getLogin() + " use this code: "
+                + host + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode());
 
         try {
             return sendGrid.api(emailFactory.createRequest(mail));
