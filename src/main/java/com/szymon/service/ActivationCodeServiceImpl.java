@@ -35,6 +35,7 @@ public class ActivationCodeServiceImpl implements ActivationCodeService {
         }
         User user = userDao.findById(codeFromDb.getUserId());
         userDao.updateActivation(user, true);
+        activationCodeDao.delete(codeFromDb);
         return new ResponseEntity<>(Responses.USER_ACTIVATED, HttpStatus.OK);
     }
 
