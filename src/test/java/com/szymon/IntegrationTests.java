@@ -130,6 +130,7 @@ public class IntegrationTests {
         assertEquals(Responses.USER_ACTIVATED, responseEntity.getBody().toString());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(activeUser.isActive());
+        assertNull(activationCodeDao.findByCode(testCode));
     }
 
     @Test

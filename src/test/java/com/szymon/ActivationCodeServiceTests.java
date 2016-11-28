@@ -60,6 +60,7 @@ public class ActivationCodeServiceTests {
         Mockito.verify(activationCodeDao).findByCode(activationCodeString);
         Mockito.verify(userDao).findById(activationCode.getUserId());
         Mockito.verify(userDao).updateActivation(userToRegister, true);
+        Mockito.verify(activationCodeDao).delete(activationCode);
 
         assertEquals(Responses.USER_ACTIVATED, response.getBody().toString());
         assertEquals(HttpStatus.OK, response.getStatusCode());
