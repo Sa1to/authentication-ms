@@ -3,6 +3,7 @@ package com.szymon;
 import com.sendgrid.Mail;
 import com.sendgrid.Request;
 import com.sendgrid.SendGrid;
+import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.Texts.Uri;
 import com.szymon.domain.ActivationCode;
@@ -16,9 +17,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 public class MailingServiceTests {
 
@@ -55,12 +60,14 @@ public class MailingServiceTests {
                 + testHost + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode())).toReturn(testMail);
         Mockito.stub(emailFactory.createRequest(testMail)).toReturn(testRequest);
 
-        mailingService.sendActivationCode(activationCode, user);
+        ResponseEntity responseEntity = mailingService.sendActivationCode(activationCode, user);
 
         Mockito.verify(emailFactory).createMail(testFrom, "Activation " + user.getName()
                 + " " + user.getSurname(), testTo, "To activate user " + user.getLogin() + " use this code: "
                 + testHost + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode());
         Mockito.verify(emailFactory).createRequest(testMail);
         Mockito.verify(sendGrid).api(testRequest);
+        assertEquals(Responses.ACTIVATION_CODE_SENT, responseEntity.getBody());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 }

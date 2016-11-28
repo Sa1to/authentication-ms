@@ -51,6 +51,8 @@ public class RegistrationValidatorTests {
 
         Mockito.stub(activationCodeService.createAndSave(userToRegister)).toReturn(activationCode);
         Mockito.stub(userDao.findByLogin(userToRegister.getLogin())).toReturn(null);
+        Mockito.stub(mailingService.sendActivationCode(activationCode,userToRegister)).toReturn(new ResponseEntity("test", HttpStatus.OK));
+
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         Mockito.verify(userDao).findByLogin(userToRegister.getLogin());
@@ -58,6 +60,7 @@ public class RegistrationValidatorTests {
         Mockito.verify(activationCodeService).createAndSave(userToRegister);
         Mockito.verify(mailingService).sendActivationCode(activationCode,userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals("test", responseEntity.getBody());
     }
 
     @Test
