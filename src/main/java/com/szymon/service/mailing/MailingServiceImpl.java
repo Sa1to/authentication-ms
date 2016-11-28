@@ -1,11 +1,14 @@
 package com.szymon.service.mailing;
 
 import com.sendgrid.*;
+import com.szymon.Texts.Responses;
 import com.szymon.Texts.Uri;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,16 +32,18 @@ public class MailingServiceImpl implements MailingService {
     String host;
 
     @Override
-    public Response sendActivationCode(ActivationCode activationCode, User user) {
+    public ResponseEntity sendActivationCode(ActivationCode activationCode, User user) {
         Mail mail = emailFactory.createMail(from, "Activation " + user.getName()
                 + " " + user.getSurname(), to, "To activate user " + user.getLogin() + " use this code: "
                 + host + Uri.AUTH + Uri.ACTIVATE + "?activationCode=" + activationCode.getCode());
 
         try {
-            return sendGrid.api(emailFactory.createRequest(mail));
+            sendGrid.api(emailFactory.createRequest(mail));
+            return new ResponseEntity<>(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
+
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 }

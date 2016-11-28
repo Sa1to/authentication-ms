@@ -46,11 +46,10 @@ public class RegistrationValidation implements RegistrationValidator {
         userDao.save(user);
         ActivationCode activationCode = activationCodeService.createAndSave(user);
         try {
-            mailingService.sendActivationCode(activationCode, user);
-            return new ResponseEntity<>(Responses.ACTIVATION_CODE_SENT, HttpStatus.OK);
+            return mailingService.sendActivationCode(activationCode, user);
         } catch (IOException e) {
             e.printStackTrace();
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
     }
