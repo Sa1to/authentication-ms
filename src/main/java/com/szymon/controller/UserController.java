@@ -28,13 +28,18 @@ public class UserController {
         return userAuthService.authenticateUser(login, password);
     }
 
+    @RequestMapping(value = Uri.LOGOUT, method = RequestMethod.GET)
+    public ResponseEntity logoutUser(@RequestParam("token") String token) {
+        return userAuthService.validateAndRemoveToken(token);
+    }
+
     @RequestMapping(value = Uri.REGISTER, method = RequestMethod.POST)
-    public ResponseEntity registerUser(@RequestBody User user){
+    public ResponseEntity registerUser(@RequestBody User user) {
         return registrationValidator.validateUserToRegistration(user);
     }
 
     @RequestMapping(value = Uri.ACTIVATE, method = RequestMethod.GET)
-    public ResponseEntity activateUser(@RequestParam("activationCode")String activationCode){
+    public ResponseEntity activateUser(@RequestParam("activationCode") String activationCode) {
         return activationCodeService.activateUser(activationCode);
     }
 }
