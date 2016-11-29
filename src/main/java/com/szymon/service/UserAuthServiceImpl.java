@@ -4,10 +4,17 @@ import com.auth0.jwt.JWTSigner;
 import com.szymon.Texts.Responses;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
+import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.jwt.JWTFactory;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureException;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -55,6 +62,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         claims.put("iss", issuer);
         claims.put("exp", exp);
         claims.put("iat", iat);
+        claims.put("userId", user.getId());
         claims.put("login", user.getLogin());
         claims.put("role", user.getRole());
 
@@ -62,5 +70,28 @@ public class UserAuthServiceImpl implements UserAuthService {
         tokenDao.save(jwtFactory.createToken(user.getId(), jwt));
 
         return jwt;
+    }
+
+    @Override
+    public ResponseEntity validateAndRemoveToken(String token) {
+        Jws<Claims> claims;
+        try {
+            claims = jwtFactory.createClaims(secret, token);
+        } catch (SignatureException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userDao.findById((ObjectId) claims.getBody().get("userId"));
+        if (user == null)
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+
+        Token jwt = tokenDao.findByUserId(user.getId());
+
+        if (jwt.getToken().equals(token)) {
+            tokenDao.delete(jwt);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+
     }
 }

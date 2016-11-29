@@ -7,4 +7,6 @@ public interface UserAuthService {
     ResponseEntity authenticateUser(String login, String password);
 
     String createToken(User user);
+
+    ResponseEntity validateAndRemoveToken(String token);
 }
