@@ -116,4 +116,13 @@ public class ControllerTests {
         assertEquals(expectedResponse, responseEntity);
     }
 
+    @Test
+    public void logoutUser() {
+        String token = "testToken";
+
+        userController.logoutUser(token);
+
+        Mockito.verify(userAuthService).validateAndRemoveToken(token);
+    }
+
 }
