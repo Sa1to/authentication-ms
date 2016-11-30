@@ -7,8 +7,10 @@ import com.szymon.dao.ActivationCodeDao;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
+import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
+import com.szymon.service.UserAuthService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,9 @@ public class IntegrationTests {
 
     @Autowired
     private ActivationCodeDao activationCodeDao;
+
+    @Autowired
+    private UserAuthService userAuthService;
 
     private String password = "pAssw0rd";
     private User user;
@@ -151,6 +156,17 @@ public class IntegrationTests {
         assertEquals(Responses.INCORRECT_ACTIVATION_CODE, responseEntity.getBody().toString());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertFalse(activeUser.isActive());
+    }
+
+    @Test
+    public void logoutAuthenticatedUser() {
+        userDao.save(user);
+        String tokenString = userAuthService.createToken(user);
+
+        ResponseEntity responseEntity = userController.logoutUser(tokenString);
+
+        assertNull(tokenDao.findByUserId(user.getId()));
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @After
