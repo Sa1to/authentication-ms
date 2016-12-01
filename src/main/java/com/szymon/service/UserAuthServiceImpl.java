@@ -1,20 +1,17 @@
 package com.szymon.service;
 
-import com.auth0.jwt.JWTSigner;
 import com.szymon.Texts.Responses;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDao;
 import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.jwt.JWTFactory;
+import com.szymon.jwt.util.UserIdFromClaimsExtractor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureException;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -40,6 +37,9 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Autowired
     private JWTFactory jwtFactory;
 
+    @Autowired
+    private UserIdFromClaimsExtractor userIdFromClaimsExtractor;
+
     @Override
     public ResponseEntity authenticateUser(String login, String password) {
         User user = userDao.findByLogin(login);
@@ -48,15 +48,13 @@ public class UserAuthServiceImpl implements UserAuthService {
         else if (!user.isActive())
             return new ResponseEntity<>(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
         else
-            return new ResponseEntity<>(createToken(userDao.findByLogin(login)), HttpStatus.OK);
+            return new ResponseEntity<>(createAndSaveToken(user), HttpStatus.OK);
     }
 
     @Override
-    public String createToken(User user) {
-        final long iat = System.currentTimeMillis() / 1000L; // issued at claim
+    public String createAndSaveToken(User user) {
+        final long iat = System.currentTimeMillis() / 1000L;
         final long exp = iat + 60L; // expires claim. In this case the token expires in 60 seconds
-
-        JWTSigner signer = jwtFactory.createJWTSigner(secret);
 
         HashMap<String, Object> claims = new HashMap<String, Object>();
         claims.put("iss", issuer);
@@ -66,7 +64,12 @@ public class UserAuthServiceImpl implements UserAuthService {
         claims.put("login", user.getLogin());
         claims.put("role", user.getRole());
 
-        String jwt = signer.sign(claims);
+        String jwt = jwtFactory.createJwt(claims, secret);
+
+        Token oldToken = tokenDao.findByUserId(user.getId());
+        if(oldToken != null)
+            tokenDao.delete(oldToken);
+
         tokenDao.save(jwtFactory.createToken(user.getId(), jwt));
 
         return jwt;
@@ -81,7 +84,8 @@ public class UserAuthServiceImpl implements UserAuthService {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
 
-        User user = userDao.findById((ObjectId) claims.getBody().get("userId"));
+        User user = userDao.findById(userIdFromClaimsExtractor.extractUserIdFromClaims(claims));
+
         if (user == null)
             return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
 

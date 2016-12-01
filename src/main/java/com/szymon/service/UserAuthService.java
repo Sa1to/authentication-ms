@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 public interface UserAuthService {
     ResponseEntity authenticateUser(String login, String password);
 
-    String createToken(User user);
+    String createAndSaveToken(User user);
 
     ResponseEntity validateAndRemoveToken(String token);
 }
