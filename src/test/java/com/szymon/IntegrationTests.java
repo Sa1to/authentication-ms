@@ -7,7 +7,6 @@ import com.szymon.dao.ActivationCodeDao;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
-import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.service.UserAuthService;
@@ -53,7 +52,7 @@ public class IntegrationTests {
 
     @Before
     public void setup() {
-        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, false);
+        user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, true);
     }
 
     @Test
@@ -109,12 +108,14 @@ public class IntegrationTests {
 
     @Test
     public void registerUser() {
-        userController.registerUser(user);
+        User inactiveUser = user;
+        inactiveUser.setActive(false);
+        userController.registerUser(inactiveUser);
 
-        ActivationCode activationCode = activationCodeDao.findByUserId(user.getId());
+        ActivationCode activationCode = activationCodeDao.findByUserId(inactiveUser.getId());
 
         assertNotNull(activationCode);
-        assertEquals(activationCode.getUserId(), user.getId());
+        assertEquals(activationCode.getUserId(), inactiveUser.getId());
     }
 
     @Test
@@ -161,12 +162,24 @@ public class IntegrationTests {
     @Test
     public void logoutAuthenticatedUser() {
         userDao.save(user);
-        String tokenString = userAuthService.createToken(user);
+        String tokenString = userAuthService.createAndSaveToken(user);
 
         ResponseEntity responseEntity = userController.logoutUser(tokenString);
 
         assertNull(tokenDao.findByUserId(user.getId()));
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void loginAsUserWhenThereIsTokenCreatedForThisUser() {
+        userDao.save(user);
+        String tokenString = userAuthService.createAndSaveToken(user);
+
+        ResponseEntity responseEntity = userController.loginUser(user.getLogin(), password);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNull(tokenDao.findByStringTokenValue(tokenString));
+        assertEquals(tokenDao.findByUserId(user.getId()).getToken(),responseEntity.getBody().toString());
     }
 
     @After
