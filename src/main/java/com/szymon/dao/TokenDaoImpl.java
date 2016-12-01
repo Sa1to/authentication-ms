@@ -24,4 +24,12 @@ public class TokenDaoImpl extends AbstractDaoImpl<Token> implements TokenDao {
         fieldEnd.equal(userId);
         return query.get();
     }
+
+    @Override
+    public Token findByStringTokenValue(String token) {
+        query = datastore.find(Token.class);
+        fieldEnd = query.criteria("token");
+        fieldEnd.equal(token);
+        return query.get();
+    }
 }

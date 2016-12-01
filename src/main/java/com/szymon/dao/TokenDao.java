@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 public interface TokenDao extends AbstractDao<Token>{
     Token findByUserId(ObjectId userId);
+
+    Token findByStringTokenValue(String token);
 }
