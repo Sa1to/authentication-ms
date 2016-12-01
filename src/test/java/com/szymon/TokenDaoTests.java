@@ -31,6 +31,7 @@ public class TokenDaoTests {
     private TokenDao tokenDao = new TokenDaoImpl();
 
     private ObjectId testUserId = new ObjectId();
+    private String testStringToken = "test";
 
     @Before
     public void setUp() {
@@ -60,6 +61,20 @@ public class TokenDaoTests {
         Mockito.verify(datastore).find(Token.class);
         Mockito.verify(query).criteria("userId");
         Mockito.verify(fieldEnd).equal(testUserId);
+        Mockito.verify(query).get();
+    }
+
+    @Test
+    public void findByStringTokenValue() {
+        Mockito.stub(datastore.find(Token.class)).toReturn(query);
+        Mockito.stub(query.criteria("token")).toReturn(fieldEnd);
+        Mockito.stub(fieldEnd.equal(testStringToken)).toReturn(token);
+
+        tokenDao.findByStringTokenValue(testStringToken);
+
+        Mockito.verify(datastore).find(Token.class);
+        Mockito.verify(query).criteria("token");
+        Mockito.verify(fieldEnd).equal(testStringToken);
         Mockito.verify(query).get();
     }
 }
