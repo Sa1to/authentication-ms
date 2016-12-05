@@ -70,28 +70,28 @@ public class RegistrationValidatorTests {
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody());
 
         userToRegister.setLogin(RandomStringUtils.random(21));
 
         responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody());
 
         userToRegister.setLogin("login with space");
 
         responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody());
 
         userToRegister.setLogin("");
 
         responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_LOGIN, responseEntity.getBody());
     }
 
     @Test
@@ -101,20 +101,20 @@ public class RegistrationValidatorTests {
         ResponseEntity responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody());
 
         userToRegister.setPassword("n0uppercase");
 
         responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody());
 
         userToRegister.setPassword("noNumber");
 
         responseEntity = registrationValidator.validateUserToRegistration(userToRegister);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody().toString());
+        assertEquals(Responses.INVALID_PASSWORD, responseEntity.getBody());
     }
 }

@@ -62,7 +62,7 @@ public class ActivationCodeServiceTests {
         Mockito.verify(userDao).updateActivation(userToRegister, true);
         Mockito.verify(activationCodeDao).delete(activationCode);
 
-        assertEquals(Responses.USER_ACTIVATED, response.getBody().toString());
+        assertEquals(Responses.USER_ACTIVATED, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -77,7 +77,7 @@ public class ActivationCodeServiceTests {
         Mockito.verify(activationCodeDao).findByCode(activationCodeString);
         Mockito.verify(userDao, Mockito.never()).findById(any());
 
-        assertEquals(Responses.INCORRECT_ACTIVATION_CODE, response.getBody().toString());
+        assertEquals(Responses.INCORRECT_ACTIVATION_CODE, response.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
