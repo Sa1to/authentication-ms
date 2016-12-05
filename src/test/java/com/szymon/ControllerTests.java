@@ -47,11 +47,11 @@ public class ControllerTests {
     @Test
     public void sendCorrectCredentials() {
 
-        Mockito.stub(userAuthService.authenticateUser(testCorrectLogin, testCorrectPassword)).toReturn(correct);
+        Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword)).toReturn(correct);
 
         ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testCorrectPassword);
 
-        Mockito.verify(userAuthService).authenticateUser(testCorrectLogin, testCorrectPassword);
+        Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(correct.getBody(), responseEntity.getBody());
@@ -60,33 +60,33 @@ public class ControllerTests {
     @Test
     public void sendWrongCredentials() {
         String testIncorrectPassword = "wrong";
-        Mockito.stub(userAuthService.authenticateUser(testCorrectLogin, testIncorrectPassword)).toReturn(wrongCredentials);
+        Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testIncorrectPassword)).toReturn(wrongCredentials);
 
         ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testIncorrectPassword);
 
-        Mockito.verify(userAuthService).authenticateUser(testCorrectLogin, testIncorrectPassword);
+        Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testIncorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody().toString());
+        assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
 
         String testIncorrectLogin = "wrong";
-        Mockito.stub(userAuthService.authenticateUser(testIncorrectLogin, testCorrectPassword)).toReturn(wrongCredentials);
+        Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testIncorrectLogin, testCorrectPassword)).toReturn(wrongCredentials);
 
         responseEntity = userController.loginUser(testIncorrectLogin, testCorrectPassword);
 
-        Mockito.verify(userAuthService).authenticateUser(testIncorrectLogin, testCorrectPassword);
+        Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testIncorrectLogin, testCorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody().toString());
+        assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
     }
 
     @Test
     public void loginAsInactiveUser() {
-        Mockito.stub(userAuthService.authenticateUser(testCorrectLogin, testCorrectPassword)).toReturn(inactiveUser);
+        Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword)).toReturn(inactiveUser);
 
         ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testCorrectPassword);
 
-        Mockito.verify(userAuthService).authenticateUser(testCorrectLogin, testCorrectPassword);
+        Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(Responses.INACTIVE_USER, responseEntity.getBody().toString());
+        assertEquals(Responses.INACTIVE_USER, responseEntity.getBody());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class ControllerTests {
 
         Mockito.verify(registrationValidator).validateUserToRegistration(userToRegister);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(activationCode, responseEntity.getBody().toString());
+        assertEquals(activationCode, responseEntity.getBody());
     }
 
     @Test
@@ -125,4 +125,12 @@ public class ControllerTests {
         Mockito.verify(userAuthService).validateAndRemoveToken(token);
     }
 
+    @Test
+    public void authenticateUser(){
+        String token = "testToken";
+
+        userController.authenticateUser(token);
+
+        Mockito.verify(userAuthService).authenticateUserBaseOnToken(token);
+    }
 }
