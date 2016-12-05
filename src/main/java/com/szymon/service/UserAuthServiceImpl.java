@@ -41,7 +41,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     private UserIdFromClaimsExtractor userIdFromClaimsExtractor;
 
     @Override
-    public ResponseEntity authenticateUser(String login, String password) {
+    public ResponseEntity authenticateUserBaseOnCredentials(String login, String password) {
         User user = userDao.findByLogin(login);
         if (user == null || !(BCrypt.checkpw(password, user.getPassword())))
             return new ResponseEntity<>(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
@@ -49,6 +49,14 @@ public class UserAuthServiceImpl implements UserAuthService {
             return new ResponseEntity<>(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
         else
             return new ResponseEntity<>(createAndSaveToken(user), HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity authenticateUserBaseOnToken(String token) {
+        if(tokenDao.findByStringTokenValue(token) != null)
+            return new ResponseEntity<>(HttpStatus.OK);
+        else
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
     }
 
     @Override
