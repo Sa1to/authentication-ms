@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
@@ -51,7 +52,7 @@ public class UserAuthServiceTests {
     private UserAuthService userAuthService = new UserAuthServiceImpl();
 
     @InjectMocks
-    private UserAuthService userAuthServiceWithMockedMethod = new UserAuthServiceImpl(){
+    private UserAuthService userAuthServiceWithMockedMethod = new UserAuthServiceImpl() {
         @Override
         public String createAndSaveToken(User user) {
             return "testToken";
@@ -76,10 +77,10 @@ public class UserAuthServiceTests {
 
         Mockito.stub(userDao.findByLogin(user.getLogin())).toReturn(userWithHashedPassword);
 
-        ResponseEntity isAuthenticated = userAuthServiceWithMockedMethod.authenticateUser(user.getLogin(), user.getPassword());
+        ResponseEntity isAuthenticated = userAuthServiceWithMockedMethod.authenticateUserBaseOnCredentials(user.getLogin(), user.getPassword());
 
         assertEquals(HttpStatus.OK, isAuthenticated.getStatusCode());
-        assertEquals(token, isAuthenticated.getBody().toString());
+        assertEquals(token, isAuthenticated.getBody());
         Mockito.verify(userDao).findByLogin(user.getLogin());
     }
 
@@ -87,10 +88,10 @@ public class UserAuthServiceTests {
     public void authenticateUserWithWrongCredentials() {
         Mockito.stub(userDao.findByLogin(user.getLogin())).toReturn(null);
 
-        ResponseEntity isAuthenticated = userAuthService.authenticateUser(user.getLogin(), user.getPassword());
+        ResponseEntity isAuthenticated = userAuthService.authenticateUserBaseOnCredentials(user.getLogin(), user.getPassword());
 
         assertEquals(HttpStatus.BAD_REQUEST, isAuthenticated.getStatusCode());
-        assertEquals(Responses.WRONG_CREDENTIALS, isAuthenticated.getBody().toString());
+        assertEquals(Responses.WRONG_CREDENTIALS, isAuthenticated.getBody());
         Mockito.verify(userDao).findByLogin(user.getLogin());
     }
 
@@ -100,10 +101,10 @@ public class UserAuthServiceTests {
 
         Mockito.stub(userDao.findByLogin(user.getLogin())).toReturn(userWithHashedPassword);
 
-        ResponseEntity isAuthenticated = userAuthService.authenticateUser(user.getLogin(), user.getPassword());
+        ResponseEntity isAuthenticated = userAuthService.authenticateUserBaseOnCredentials(user.getLogin(), user.getPassword());
 
         assertEquals(HttpStatus.BAD_REQUEST, isAuthenticated.getStatusCode());
-        assertEquals(Responses.INACTIVE_USER, isAuthenticated.getBody().toString());
+        assertEquals(Responses.INACTIVE_USER, isAuthenticated.getBody());
         Mockito.verify(userDao).findByLogin(user.getLogin());
     }
 
@@ -111,7 +112,7 @@ public class UserAuthServiceTests {
     public void createTokenTest() throws Exception {
         String stringToken = "testToken";
 
-        Mockito.stub(jwtFactory.createJwt(any(),eq(testSecret))).toReturn(stringToken);
+        Mockito.stub(jwtFactory.createJwt(any(), eq(testSecret))).toReturn(stringToken);
 
         Token testToken = new Token(user.getId(), stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
@@ -121,15 +122,15 @@ public class UserAuthServiceTests {
 
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(any(),eq(testSecret));
+        Mockito.verify(jwtFactory).createJwt(any(), eq(testSecret));
     }
 
     @Test
-    public void createTokenWhenThereIsAlreadyOneCreated(){
+    public void createTokenWhenThereIsAlreadyOneCreated() {
         String stringToken = "testToken";
         Token oldToken = new Token();
 
-        Mockito.stub(jwtFactory.createJwt(any(),eq(testSecret))).toReturn(stringToken);
+        Mockito.stub(jwtFactory.createJwt(any(), eq(testSecret))).toReturn(stringToken);
 
         Token testToken = new Token(user.getId(), stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
@@ -140,7 +141,7 @@ public class UserAuthServiceTests {
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).delete(oldToken);
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(any(),eq(testSecret));
+        Mockito.verify(jwtFactory).createJwt(any(), eq(testSecret));
     }
 
     @Test
@@ -148,8 +149,9 @@ public class UserAuthServiceTests {
         String testToken = "testToken";
         User user = new User("jankowalski", "Jan", "Kowalski", "Passw0rd", RoleEnum.USER, true);
         Token token = new Token(user.getId(), testToken);
-        Jws<Claims> claims = new DefaultJws<>(null, new DefaultClaims(new HashMap<String, Object>()
-        {{put("userId", new LinkedHashMap<String,Object>());}}),testSecret);
+        Jws<Claims> claims = new DefaultJws<>(null, new DefaultClaims(new HashMap<String, Object>() {{
+            put("userId", new LinkedHashMap<String, Object>());
+        }}), testSecret);
 
         Mockito.stub(jwtFactory.createClaims(testSecret, testToken)).toReturn(claims);
         Mockito.stub(extractor.extractUserIdFromClaims(claims)).toReturn(user.getId());
@@ -164,5 +166,32 @@ public class UserAuthServiceTests {
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).delete(token);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void authenticateUserWithCorrectToken() {
+        String stringToken = "testToken";
+        Token token = new Token();
+
+        Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(token);
+
+        ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(stringToken);
+
+        Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    public void authenticateUserWithIncorrectToken() {
+        String stringToken = "invalidToken";
+
+        Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(null);
+
+        ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(stringToken);
+
+        Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        assertEquals(Responses.INVALID_TOKEN, responseEntity.getBody());
     }
 }
