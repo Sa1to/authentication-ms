@@ -102,7 +102,7 @@ public class IntegrationTests {
 
         ResponseEntity responseEntity = userController.loginUser(inactiveUser.getLogin(), password);
 
-        assertEquals(Responses.INACTIVE_USER, responseEntity.getBody().toString());
+        assertEquals(Responses.INACTIVE_USER, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
@@ -133,7 +133,7 @@ public class IntegrationTests {
 
         User activeUser = userDao.findById(inactiveUser.getId());
 
-        assertEquals(Responses.USER_ACTIVATED, responseEntity.getBody().toString());
+        assertEquals(Responses.USER_ACTIVATED, responseEntity.getBody());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(activeUser.isActive());
         assertNull(activationCodeDao.findByCode(testCode));
@@ -154,7 +154,7 @@ public class IntegrationTests {
 
         User activeUser = userDao.findById(inactiveUser.getId());
 
-        assertEquals(Responses.INCORRECT_ACTIVATION_CODE, responseEntity.getBody().toString());
+        assertEquals(Responses.INCORRECT_ACTIVATION_CODE, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertFalse(activeUser.isActive());
     }
@@ -174,12 +174,36 @@ public class IntegrationTests {
     public void loginAsUserWhenThereIsTokenCreatedForThisUser() {
         userDao.save(user);
         String tokenString = userAuthService.createAndSaveToken(user);
-
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         ResponseEntity responseEntity = userController.loginUser(user.getLogin(), password);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNull(tokenDao.findByStringTokenValue(tokenString));
-        assertEquals(tokenDao.findByUserId(user.getId()).getToken(),responseEntity.getBody().toString());
+        assertEquals(tokenDao.findByUserId(user.getId()).getToken(), responseEntity.getBody());
+    }
+
+    @Test
+    public void authenticateUserWithCorrectToken() {
+        String tokenString = userAuthService.createAndSaveToken(user);
+
+        ResponseEntity responseEntity = userController.authenticateUser(tokenString);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNull(responseEntity.getBody());
+    }
+
+    @Test
+    public void authenticateUserWithIncorrectToken() {
+        String invalidToken = "token";
+
+        ResponseEntity responseEntity = userController.authenticateUser(invalidToken);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        assertEquals(Responses.INVALID_TOKEN, responseEntity.getBody());
     }
 
     @After
