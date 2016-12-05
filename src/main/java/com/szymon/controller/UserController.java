@@ -25,7 +25,7 @@ public class UserController {
     @RequestMapping(value = Uri.LOGIN, method = RequestMethod.GET)
     public ResponseEntity loginUser(@RequestParam("login") String login,
                                     @RequestParam("password") String password) {
-        return userAuthService.authenticateUser(login, password);
+        return userAuthService.authenticateUserBaseOnCredentials(login, password);
     }
 
     @RequestMapping(value = Uri.LOGOUT, method = RequestMethod.GET)
@@ -41,5 +41,10 @@ public class UserController {
     @RequestMapping(value = Uri.ACTIVATE, method = RequestMethod.GET)
     public ResponseEntity activateUser(@RequestParam("activationCode") String activationCode) {
         return activationCodeService.activateUser(activationCode);
+    }
+
+    @RequestMapping(value = Uri.AUTHENTICATE, method = RequestMethod.GET)
+    public ResponseEntity authenticateUser(@RequestParam("token") String token){
+        return userAuthService.authenticateUserBaseOnToken(token);
     }
 }
