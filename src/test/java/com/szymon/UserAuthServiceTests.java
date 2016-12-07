@@ -15,6 +15,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.impl.DefaultJws;
 import org.apache.commons.lang.RandomStringUtils;
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -111,10 +112,9 @@ public class UserAuthServiceTests {
     @Test
     public void createTokenTest() throws Exception {
         String stringToken = "testToken";
-
-        Mockito.stub(jwtFactory.createJwt(any(), eq(testSecret))).toReturn(stringToken);
-
         Token testToken = new Token(user.getId(), stringToken);
+
+        Mockito.stub(jwtFactory.createJwt(user, testSecret)).toReturn(stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
         Mockito.stub(tokenDao.findByUserId(user.getId())).toReturn(null);
 
@@ -122,7 +122,7 @@ public class UserAuthServiceTests {
 
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(any(), eq(testSecret));
+        Mockito.verify(jwtFactory).createJwt(user, testSecret);
     }
 
     @Test
@@ -130,7 +130,7 @@ public class UserAuthServiceTests {
         String stringToken = "testToken";
         Token oldToken = new Token();
 
-        Mockito.stub(jwtFactory.createJwt(any(), eq(testSecret))).toReturn(stringToken);
+        Mockito.stub(jwtFactory.createJwt(user, testSecret)).toReturn(stringToken);
 
         Token testToken = new Token(user.getId(), stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
@@ -141,7 +141,7 @@ public class UserAuthServiceTests {
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).delete(oldToken);
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(any(), eq(testSecret));
+        Mockito.verify(jwtFactory).createJwt(user, testSecret);
     }
 
     @Test
@@ -150,19 +150,15 @@ public class UserAuthServiceTests {
         User user = new User("jankowalski", "Jan", "Kowalski", "Passw0rd", RoleEnum.USER, true);
         Token token = new Token(user.getId(), testToken);
         Jws<Claims> claims = new DefaultJws<>(null, new DefaultClaims(new HashMap<String, Object>() {{
-            put("userId", new LinkedHashMap<String, Object>());
+            put("userId", new ObjectId());
         }}), testSecret);
 
-        Mockito.stub(jwtFactory.createClaims(testSecret, testToken)).toReturn(claims);
-        Mockito.stub(extractor.extractUserIdFromClaims(claims)).toReturn(user.getId());
-        Mockito.stub(userDao.findById(user.getId())).toReturn(user);
+        Mockito.stub(extractor.extractUserIdFromToken(testToken, testSecret)).toReturn(user.getId());
         Mockito.stub(tokenDao.findByUserId(user.getId())).toReturn(token);
 
         ResponseEntity responseEntity = userAuthService.validateAndRemoveToken(testToken);
 
-        Mockito.verify(extractor).extractUserIdFromClaims(claims);
-        Mockito.verify(jwtFactory).createClaims(testSecret, testToken);
-        Mockito.verify(userDao).findById(any());
+        Mockito.verify(extractor).extractUserIdFromToken(testToken, testSecret);
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).delete(token);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());

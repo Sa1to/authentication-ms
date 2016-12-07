@@ -7,6 +7,7 @@ import com.szymon.dao.ActivationCodeDao;
 import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
+import com.szymon.domain.Credentials;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.service.UserAuthService;
@@ -49,10 +50,12 @@ public class IntegrationTests {
 
     private String password = "pAssw0rd";
     private User user;
+    private Credentials credentials;
 
     @Before
     public void setup() {
         user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, true);
+        credentials = new Credentials(user.getLogin(), password);
     }
 
     @Test
@@ -71,7 +74,7 @@ public class IntegrationTests {
     public void loginAsUserTest() {
         user.setActive(true);
         userDao.save(user);
-        ResponseEntity response = userController.loginUser(user.getLogin(), password);
+        ResponseEntity response = userController.loginUser(credentials);
         String token = response.getBody().toString();
         assertEquals(token, tokenDao.findByUserId(user.getId()).getToken());
         assertNotEquals(Responses.WRONG_CREDENTIALS, response.getBody());
@@ -81,7 +84,8 @@ public class IntegrationTests {
     @Test
     public void loginAsUserWithWrongPassword() {
         userDao.save(user);
-        ResponseEntity responseEntity = userController.loginUser(user.getLogin(), "WRONG PASSWORD");
+        credentials.setPassword("wrongPassword");
+        ResponseEntity responseEntity = userController.loginUser(credentials);
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
@@ -89,7 +93,8 @@ public class IntegrationTests {
     @Test
     public void loginAsUserWithWrongLogin() {
         userDao.save(user);
-        ResponseEntity responseEntity = userController.loginUser("WRONG LOGIN", password);
+        credentials.setLogin("wrongLogin");
+        ResponseEntity responseEntity = userController.loginUser(credentials);
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
@@ -100,7 +105,7 @@ public class IntegrationTests {
         inactiveUser.setActive(false);
         userDao.save(inactiveUser);
 
-        ResponseEntity responseEntity = userController.loginUser(inactiveUser.getLogin(), password);
+        ResponseEntity responseEntity = userController.loginUser(credentials);
 
         assertEquals(Responses.INACTIVE_USER, responseEntity.getBody());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -162,7 +167,8 @@ public class IntegrationTests {
     @Test
     public void logoutAuthenticatedUser() {
         userDao.save(user);
-        String tokenString = userAuthService.createAndSaveToken(user);
+
+        String tokenString = userController.loginUser(credentials).getBody().toString();
 
         ResponseEntity responseEntity = userController.logoutUser(tokenString);
 
@@ -179,7 +185,7 @@ public class IntegrationTests {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        ResponseEntity responseEntity = userController.loginUser(user.getLogin(), password);
+        ResponseEntity responseEntity = userController.loginUser(credentials);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNull(tokenDao.findByStringTokenValue(tokenString));

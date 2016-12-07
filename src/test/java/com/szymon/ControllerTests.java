@@ -3,6 +3,7 @@ package com.szymon;
 import com.szymon.Texts.Responses;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.controller.UserController;
+import com.szymon.domain.Credentials;
 import com.szymon.domain.User;
 import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidator;
@@ -34,6 +35,7 @@ public class ControllerTests {
 
     private String testCorrectLogin = "testLogin";
     private String testCorrectPassword = "testPassword";
+    private Credentials credentials = new Credentials(testCorrectLogin, testCorrectPassword);
 
     private ResponseEntity wrongCredentials = new ResponseEntity<>(Responses.WRONG_CREDENTIALS, HttpStatus.BAD_REQUEST);
     private ResponseEntity inactiveUser = new ResponseEntity<>(Responses.INACTIVE_USER, HttpStatus.BAD_REQUEST);
@@ -49,7 +51,7 @@ public class ControllerTests {
 
         Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword)).toReturn(correct);
 
-        ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testCorrectPassword);
+        ResponseEntity responseEntity = userController.loginUser(credentials);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword);
 
@@ -60,18 +62,21 @@ public class ControllerTests {
     @Test
     public void sendWrongCredentials() {
         String testIncorrectPassword = "wrong";
+        credentials.setPassword(testIncorrectPassword);
         Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testIncorrectPassword)).toReturn(wrongCredentials);
 
-        ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testIncorrectPassword);
+        ResponseEntity responseEntity = userController.loginUser(credentials);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testIncorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(Responses.WRONG_CREDENTIALS, responseEntity.getBody());
 
         String testIncorrectLogin = "wrong";
+        credentials.setPassword(testCorrectPassword);
+        credentials.setLogin(testIncorrectLogin);
         Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testIncorrectLogin, testCorrectPassword)).toReturn(wrongCredentials);
 
-        responseEntity = userController.loginUser(testIncorrectLogin, testCorrectPassword);
+        responseEntity = userController.loginUser(credentials);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testIncorrectLogin, testCorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -82,7 +87,7 @@ public class ControllerTests {
     public void loginAsInactiveUser() {
         Mockito.stub(userAuthService.authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword)).toReturn(inactiveUser);
 
-        ResponseEntity responseEntity = userController.loginUser(testCorrectLogin, testCorrectPassword);
+        ResponseEntity responseEntity = userController.loginUser(credentials);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnCredentials(testCorrectLogin, testCorrectPassword);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
