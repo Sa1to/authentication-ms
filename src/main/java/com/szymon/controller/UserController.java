@@ -1,6 +1,7 @@
 package com.szymon.controller;
 
 import com.szymon.Texts.Uri;
+import com.szymon.domain.Credentials;
 import com.szymon.domain.User;
 import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidator;
@@ -22,10 +23,9 @@ public class UserController {
     @Autowired
     private ActivationCodeService activationCodeService;
 
-    @RequestMapping(value = Uri.LOGIN, method = RequestMethod.GET)
-    public ResponseEntity loginUser(@RequestParam("login") String login,
-                                    @RequestParam("password") String password) {
-        return userAuthService.authenticateUserBaseOnCredentials(login, password);
+    @RequestMapping(value = Uri.LOGIN, method = RequestMethod.POST)
+    public ResponseEntity loginUser(@RequestBody Credentials credentials) {
+        return userAuthService.authenticateUserBaseOnCredentials(credentials.getLogin(), credentials.getPassword());
     }
 
     @RequestMapping(value = Uri.LOGOUT, method = RequestMethod.GET)
