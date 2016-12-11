@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
 
 public class TokenDaoTests {
     @Mock
@@ -26,6 +27,9 @@ public class TokenDaoTests {
 
     @Mock
     private FieldEnd fieldEnd;
+
+    @Mock
+    private UpdateOperations updateOperations;
 
     @InjectMocks
     private TokenDao tokenDao = new TokenDaoImpl();
@@ -76,5 +80,21 @@ public class TokenDaoTests {
         Mockito.verify(query).criteria("token");
         Mockito.verify(fieldEnd).equal(testStringToken);
         Mockito.verify(query).get();
+    }
+
+    @Test
+    public void upDateToken() {
+        String oldToken = "old";
+        String newToken = "new";
+        Token token = new Token(null, oldToken);
+
+        Mockito.stub(datastore.createUpdateOperations(Token.class)).toReturn(updateOperations);
+        Mockito.stub(updateOperations.set("token", newToken)).toReturn(updateOperations);
+
+        tokenDao.updateToken(token, newToken);
+
+        Mockito.verify(datastore).createUpdateOperations(Token.class);
+        Mockito.verify(updateOperations).set("token", newToken);
+        Mockito.verify(datastore).update(token, updateOperations);
     }
 }
