@@ -1,6 +1,5 @@
 package com.szymon.service;
 
-import com.sendgrid.Response;
 import com.szymon.Texts.Responses;
 import com.szymon.dao.UserDao;
 import com.szymon.domain.ActivationCode;
@@ -28,21 +27,24 @@ public class RegistrationValidation implements RegistrationValidator {
 
     @Override
     public ResponseEntity validateUserToRegistration(User user) {
+        try {
+            if (!validateLogin(user.getLogin()))
+                return new ResponseEntity<>(Responses.INVALID_LOGIN, HttpStatus.BAD_REQUEST);
 
-        if (!validateLogin(user.getLogin()))
-            return new ResponseEntity<>(Responses.INVALID_LOGIN, HttpStatus.BAD_REQUEST);
+            if (!validatePassword(user.getPassword()))
+                return new ResponseEntity<>(Responses.INVALID_PASSWORD, HttpStatus.BAD_REQUEST);
 
-        if (!validatePassword(user.getPassword()))
-            return new ResponseEntity<>(Responses.INVALID_PASSWORD, HttpStatus.BAD_REQUEST);
+            if (user.isActive())
+                return new ResponseEntity<>(Responses.ACTIVE_PARAM_NOT_ALLOWED, HttpStatus.BAD_REQUEST);
 
-        if (user.isActive())
-            return new ResponseEntity<>(Responses.ACTIVE_PARAM_NOT_ALLOWED, HttpStatus.BAD_REQUEST);
-
-        User userFromDB = userDao.findByLogin(user.getLogin());
-        if (userFromDB != null) {
-            return new ResponseEntity<>(Responses.USER_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
+            User userFromDB = userDao.findByLogin(user.getLogin());
+            if (userFromDB != null) {
+                return new ResponseEntity<>(Responses.USER_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
+            }
         }
-
+        catch (NullPointerException e){
+            return new ResponseEntity<>(Responses.USER_FIELDS_LACKING, HttpStatus.BAD_REQUEST);
+        }
         userDao.save(user);
         ActivationCode activationCode = activationCodeService.createAndSave(user);
         try {
