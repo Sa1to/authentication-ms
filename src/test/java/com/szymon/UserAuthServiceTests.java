@@ -8,11 +8,15 @@ import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.jwt.JWTFactory;
 import com.szymon.jwt.util.UserIdFromClaimsExtractor;
+import com.szymon.service.TokenService;
 import com.szymon.service.UserAuthService;
 import com.szymon.service.UserAuthServiceImpl;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.impl.DefaultHeader;
 import io.jsonwebtoken.impl.DefaultJws;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bson.types.ObjectId;
@@ -27,8 +31,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -48,6 +52,9 @@ public class UserAuthServiceTests {
 
     @Mock
     private UserIdFromClaimsExtractor extractor;
+
+    @Mock
+    private TokenService tokenService;
 
     @InjectMocks
     private UserAuthService userAuthService = new UserAuthServiceImpl();
@@ -113,8 +120,9 @@ public class UserAuthServiceTests {
     public void createTokenTest() throws Exception {
         String stringToken = "testToken";
         Token testToken = new Token(user.getId(), stringToken);
+        Date date = new Date(System.currentTimeMillis() + 5 * 60 * 1000);
 
-        Mockito.stub(jwtFactory.createJwt(user, testSecret)).toReturn(stringToken);
+        Mockito.stub(jwtFactory.createJwt(eq(user), eq(testSecret), any())).toReturn(stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
         Mockito.stub(tokenDao.findByUserId(user.getId())).toReturn(null);
 
@@ -122,15 +130,16 @@ public class UserAuthServiceTests {
 
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(user, testSecret);
+        Mockito.verify(jwtFactory).createJwt(eq(user), eq(testSecret), any());
     }
 
     @Test
     public void createTokenWhenThereIsAlreadyOneCreated() {
         String stringToken = "testToken";
         Token oldToken = new Token();
+        Date date = new Date(System.currentTimeMillis() + 5 * 60 * 1000);
 
-        Mockito.stub(jwtFactory.createJwt(user, testSecret)).toReturn(stringToken);
+        Mockito.stub(jwtFactory.createJwt(user, testSecret, date)).toReturn(stringToken);
 
         Token testToken = new Token(user.getId(), stringToken);
         Mockito.stub(jwtFactory.createToken(user.getId(), stringToken)).toReturn(testToken);
@@ -141,7 +150,7 @@ public class UserAuthServiceTests {
         Mockito.verify(tokenDao).findByUserId(user.getId());
         Mockito.verify(tokenDao).delete(oldToken);
         Mockito.verify(tokenDao).save(testToken);
-        Mockito.verify(jwtFactory).createJwt(user, testSecret);
+        Mockito.verify(jwtFactory).createJwt(user, testSecret, date);
     }
 
     @Test
@@ -167,27 +176,43 @@ public class UserAuthServiceTests {
     @Test
     public void authenticateUserWithCorrectToken() {
         String stringToken = "testToken";
-        Token token = new Token();
+        Token token = new Token(null, stringToken);
 
         Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(token);
 
         ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(stringToken);
 
         Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
+        Mockito.verify(tokenService).validateToken(stringToken, testSecret);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNull(responseEntity.getBody());
     }
 
     @Test
-    public void authenticateUserWithIncorrectToken() {
+    public void authenticateUserWithInvalidToken() {
         String stringToken = "invalidToken";
-
-        Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(null);
+        Mockito.doThrow(new MalformedJwtException("message")).when(tokenService).validateToken(stringToken, testSecret);
 
         ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(stringToken);
 
-        Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
+        Mockito.verify(tokenService).validateToken(stringToken, testSecret);
         assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
         assertEquals(Responses.INVALID_TOKEN, responseEntity.getBody());
+    }
+
+    @Test
+    public void authenticateUserWithExpiredToken() {
+        String stringToken = "expiredToken";
+        Token token = new Token(null, stringToken);
+        Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(token);
+        Mockito.doThrow(new ExpiredJwtException(new DefaultHeader(), new DefaultClaims(), "message")).when(tokenService).validateToken(stringToken, testSecret);
+
+        ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(stringToken);
+
+        Mockito.verify(tokenService).validateToken(stringToken, testSecret);
+        Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
+        Mockito.verify(tokenDao).delete(token);
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        assertEquals(Responses.TOKEN_EXPIRED, responseEntity.getBody());
     }
 }
