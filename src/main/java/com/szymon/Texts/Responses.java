@@ -11,4 +11,6 @@ public class Responses {
     public static final String USER_ACTIVATED = "User has been activated";
     public static final String INCORRECT_ACTIVATION_CODE = "Incorrect activation code";
     public static final String INVALID_TOKEN = "Invalid token!";
+    public static final String USER_FIELDS_LACKING = "User fields not set";
+    public static final String TOKEN_EXPIRED = "Token expired";
 }
