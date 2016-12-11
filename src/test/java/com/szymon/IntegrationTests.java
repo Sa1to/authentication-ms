@@ -8,20 +8,27 @@ import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.Credentials;
+import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
+import com.szymon.jwt.JWTFactory;
 import com.szymon.service.UserAuthService;
+import org.apache.catalina.connector.Response;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -47,6 +54,12 @@ public class IntegrationTests {
 
     @Autowired
     private UserAuthService userAuthService;
+
+    @Autowired
+    private JWTFactory jwtFactory;
+
+    @Value("${jwt.secret}")
+    private String secret;
 
     private String password = "pAssw0rd";
     private User user;
@@ -115,12 +128,25 @@ public class IntegrationTests {
     public void registerUser() {
         User inactiveUser = user;
         inactiveUser.setActive(false);
-        userController.registerUser(inactiveUser);
+
+        ResponseEntity responseEntity = userController.registerUser(inactiveUser);
 
         ActivationCode activationCode = activationCodeDao.findByUserId(inactiveUser.getId());
 
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(Responses.ACTIVATION_CODE_SENT, responseEntity.getBody());
         assertNotNull(activationCode);
         assertEquals(activationCode.getUserId(), inactiveUser.getId());
+    }
+
+    @Test
+    public void registerUserWithMissingFields() {
+        User nullUser = new User();
+
+        ResponseEntity responseEntity = userController.registerUser(nullUser);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Responses.USER_FIELDS_LACKING, responseEntity.getBody());
     }
 
     @Test
@@ -210,6 +236,34 @@ public class IntegrationTests {
 
         assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
         assertEquals(Responses.INVALID_TOKEN, responseEntity.getBody());
+    }
+
+    @Test
+    public void authenticateUserWithExpiredToken() {
+        String tokenString = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() - 60 * 1000));
+        Token token = new Token(user.getId(), tokenString);
+        tokenDao.save(token);
+
+        ResponseEntity responseEntity = userController.authenticateUser(tokenString);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        assertEquals(Responses.TOKEN_EXPIRED, responseEntity.getBody());
+        assertNull(tokenDao.findByStringTokenValue(token.getToken()));
+    }
+
+    @Test
+    public void asUserRenewToken() {
+        String tokenString = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() + 60 * 1000));
+        Token token = new Token(user.getId(), tokenString);
+        tokenDao.save(token);
+
+        ResponseEntity responseRenew = userController.renewToken(tokenString);
+        ResponseEntity responseAuth = userController.authenticateUser(responseRenew.getBody().toString());
+
+        assertEquals(HttpStatus.OK, responseRenew.getStatusCode());
+        assertNotEquals(tokenString, responseRenew.getBody());
+
+        assertEquals(HttpStatus.OK, responseAuth.getStatusCode());
     }
 
     @After
