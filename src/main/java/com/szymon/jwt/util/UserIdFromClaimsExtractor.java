@@ -1,8 +1,10 @@
 package com.szymon.jwt.util;
 
 import com.szymon.jwt.JWTFactory;
+import com.szymon.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +16,9 @@ import java.util.LinkedHashMap;
 public class UserIdFromClaimsExtractor {
 
     @Autowired
-    private JWTFactory jwtFactory;
+    private TokenService jwtFactory;
 
-    public ObjectId extractUserIdFromToken(String token, String secret) throws NullPointerException, SignatureException {
+    public ObjectId extractUserIdFromToken(String token, String secret) throws NullPointerException, SignatureException, MalformedJwtException {
         Jws<Claims> claims = jwtFactory.getClaimsFromToken(token, secret);
         LinkedHashMap<String, Object> userId = (LinkedHashMap<String, Object>) claims.getBody().get("userId");
         return new ObjectId((int) userId.get("timestamp"),
