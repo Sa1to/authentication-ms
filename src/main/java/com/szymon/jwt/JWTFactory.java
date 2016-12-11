@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Component
 public class JWTFactory {
-    public String createJwt(User user, String secret) {
+    public String createJwt(User user, String secret, Date expirationDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
 
@@ -23,7 +23,7 @@ public class JWTFactory {
         Date expiration = calendar.getTime();
 
         return Jwts.builder()
-                .setExpiration(expiration)
+                .setExpiration(expirationDate)
                 .setIssuedAt(issueAt)
                 .claim("userId", user.getId())
                 .claim("login", user.getLogin())
@@ -36,9 +36,4 @@ public class JWTFactory {
         return new Token(userId, jwt);
     }
 
-    public Jws<Claims> getClaimsFromToken(String token, String secret) throws SignatureException {
-        return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token);
-    }
 }
