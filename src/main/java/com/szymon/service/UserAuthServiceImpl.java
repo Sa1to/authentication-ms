@@ -7,8 +7,8 @@ import com.szymon.domain.Token;
 import com.szymon.domain.User;
 import com.szymon.jwt.JWTFactory;
 import com.szymon.jwt.util.UserIdFromClaimsExtractor;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
+import java.util.Calendar;
+import java.util.Date;
 
 @Service
 public class UserAuthServiceImpl implements UserAuthService {
@@ -39,6 +42,9 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Autowired
     private UserIdFromClaimsExtractor userIdFromClaimsExtractor;
 
+    @Autowired
+    private TokenService tokenService;
+
     @Override
     public ResponseEntity authenticateUserBaseOnCredentials(String login, String password) {
         User user = userDao.findByLogin(login);
@@ -52,15 +58,33 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     public ResponseEntity authenticateUserBaseOnToken(String token) {
-        if (tokenDao.findByStringTokenValue(token) != null)
-            return new ResponseEntity<>(HttpStatus.OK);
-        else
+        Token tokenFromDB = tokenDao.findByStringTokenValue(token);
+        try {
+            tokenService.validateToken(token, secret);
+        } catch (ExpiredJwtException e) {
+            if (tokenFromDB != null)
+                tokenDao.delete(tokenFromDB);
+
+            return new ResponseEntity<>(Responses.TOKEN_EXPIRED, HttpStatus.UNAUTHORIZED);
+        } catch (MalformedJwtException e) {
             return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+        } catch (SignatureException e) {
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+        }
+        if (tokenFromDB == null)
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     public String createAndSaveToken(User user) {
-        String jwt = jwtFactory.createJwt(user, secret);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.add(Calendar.MINUTE, 5);// expires claim. In this case the token expires in 5 minutes
+        Date expiration = calendar.getTime();
+
+        String jwt = jwtFactory.createJwt(user, secret, expiration);
 
         Token oldToken = tokenDao.findByUserId(user.getId());
         if (oldToken != null)
@@ -78,8 +102,9 @@ public class UserAuthServiceImpl implements UserAuthService {
             userId = userIdFromClaimsExtractor.extractUserIdFromToken(token, secret);
         } catch (SignatureException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
+        } catch (MalformedJwtException e) {
             return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
         }
 
@@ -91,5 +116,4 @@ public class UserAuthServiceImpl implements UserAuthService {
         } else
             return new ResponseEntity<>(Responses.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
     }
-
 }
