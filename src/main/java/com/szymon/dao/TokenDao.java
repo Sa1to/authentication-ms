@@ -8,4 +8,6 @@ public interface TokenDao extends AbstractDao<Token>{
     Token findByUserId(ObjectId userId);
 
     Token findByStringTokenValue(String token);
+
+    void updateToken(Token token, String renewedToken);
 }
