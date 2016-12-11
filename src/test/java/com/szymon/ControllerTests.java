@@ -7,6 +7,7 @@ import com.szymon.domain.Credentials;
 import com.szymon.domain.User;
 import com.szymon.service.ActivationCodeService;
 import com.szymon.service.RegistrationValidator;
+import com.szymon.service.TokenRenewService;
 import com.szymon.service.UserAuthService;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +30,9 @@ public class ControllerTests {
 
     @Mock
     private ActivationCodeService activationCodeService;
+
+    @Mock
+    private TokenRenewService tokenRenewService;
 
     @InjectMocks
     private UserController userController = new UserController();
@@ -124,18 +128,40 @@ public class ControllerTests {
     @Test
     public void logoutUser() {
         String token = "testToken";
+        ResponseEntity expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        Mockito.stub(userAuthService.validateAndRemoveToken(token)).toReturn(expectedResponse);
 
-        userController.logoutUser(token);
+        ResponseEntity responseEntity = userController.logoutUser(token);
 
         Mockito.verify(userAuthService).validateAndRemoveToken(token);
+        assertEquals(expectedResponse.getStatusCode(), responseEntity.getStatusCode());
+        assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
     @Test
-    public void authenticateUser(){
+    public void authenticateUser() {
         String token = "testToken";
+        ResponseEntity expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        Mockito.stub(userAuthService.authenticateUserBaseOnToken(token)).toReturn(expectedResponse);
 
-        userController.authenticateUser(token);
+        ResponseEntity responseEntity = userController.authenticateUser(token);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnToken(token);
+        assertEquals(expectedResponse.getStatusCode(), responseEntity.getStatusCode());
+        assertEquals(expectedResponse.getBody(), responseEntity.getBody());
+    }
+
+    @Test
+    public void renewToken() {
+        String token = "testToken";
+        String renewedToken = "renewedToken";
+        ResponseEntity expectedResponse = new ResponseEntity<>(renewedToken, HttpStatus.OK);
+        Mockito.stub(tokenRenewService.renewTokenExpirationDate(token)).toReturn(expectedResponse);
+
+        ResponseEntity responseEntity = userController.renewToken(token);
+
+        Mockito.verify(tokenRenewService).renewTokenExpirationDate(token);
+        assertEquals(expectedResponse.getStatusCode(), responseEntity.getStatusCode());
+        assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 }
