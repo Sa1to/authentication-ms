@@ -13,10 +13,8 @@ import com.szymon.domain.User;
 import com.szymon.Texts.RoleEnum;
 import com.szymon.jwt.JWTFactory;
 import com.szymon.service.UserAuthService;
-import org.apache.catalina.connector.Response;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
@@ -26,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
@@ -35,6 +34,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@ActiveProfiles("test")
 public class IntegrationTests {
 
     @Autowired
@@ -69,6 +69,11 @@ public class IntegrationTests {
     public void setup() {
         user = new User("jankowalski", "Jan", "Kowalski", password, RoleEnum.USER, true);
         credentials = new Credentials(user.getLogin(), password);
+    }
+
+    @After
+    public void shutdown() {
+        datastore.getDB().dropDatabase();
     }
 
     @Test
@@ -266,8 +271,4 @@ public class IntegrationTests {
         assertEquals(HttpStatus.OK, responseAuth.getStatusCode());
     }
 
-    @After
-    public void shutdown() {
-        datastore.getDB().dropDatabase();
-    }
 }
