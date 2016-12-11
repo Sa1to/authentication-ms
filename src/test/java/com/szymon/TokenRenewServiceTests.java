@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
-public class TokenRenewServiceTest {
+public class TokenRenewServiceTests {
 
     @Mock
     private TokenService tokenService;

@@ -1,28 +1,23 @@
 package com.szymon;
 
-import com.szymon.domain.Token;
+import com.szymon.domain.User;
 import com.szymon.jwt.JWTFactory;
 import com.szymon.service.TokenService;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.impl.DefaultJws;
-import org.bson.types.ObjectId;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.HashMap;
+import java.util.Calendar;
+import java.util.Date;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class TokenServiceTests {
 
-    @Mock
-    private JWTFactory jwtFactory;
+    private JWTFactory jwtFactory = new JWTFactory();
 
-    @InjectMocks
     private TokenService tokenService = new TokenService();
 
     @Before
@@ -32,15 +27,26 @@ public class TokenServiceTests {
 
     @Test
     public void checkIfTokenExpired() {
-        String token = "token";
+        User user = new User();
         String secret = "secret";
+        String jwt = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() + 1 * 60 * 1000));
 
-        Mockito.stub(jwtFactory.getClaimsFromToken(token, secret)).toReturn(new DefaultJws<>(null, new DefaultClaims(new HashMap<String, Object>() {{
-            put("exp", System.currentTimeMillis() + 1000);
-        }}), secret));
+        tokenService.validateToken(jwt, secret);
+    }
 
-        boolean isValid = tokenService.validateTokenExpirationDate(token, secret);
+    @Test
+    public void renewToken(){
+        User user = new User();
+        String secret = "secret";
+        String jwt = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() + 1 * 60 * 1000));
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis() + 5 * 60 * 1000);
+        Date newDate = calendar.getTime();
 
-        assertTrue(isValid);
+        jwt = tokenService.updateExpiration(jwt, secret, newDate);
+
+        Jws<Claims> claims = tokenService.getClaimsFromToken(jwt, secret);
+
+        assertEquals(newDate.getDate(), claims.getBody().getExpiration().getDate());
     }
 }
