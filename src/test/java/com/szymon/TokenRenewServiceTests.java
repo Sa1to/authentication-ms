@@ -1,7 +1,5 @@
 package com.szymon;
 
-import com.szymon.dao.TokenDao;
-import com.szymon.domain.Token;
 import com.szymon.service.TokenRenewService;
 import com.szymon.service.TokenService;
 import com.szymon.service.UserAuthService;
@@ -27,9 +25,6 @@ public class TokenRenewServiceTests {
     @Mock
     private UserAuthService userAuthService;
 
-    @Mock
-    private TokenDao tokenDao;
-
     @InjectMocks
     private TokenRenewService tokenRenewService = new TokenRenewService();
     private String testSecret = "testSecret";
@@ -44,18 +39,14 @@ public class TokenRenewServiceTests {
     public void refreshValidTokenExpirationDate() {
         String stringToken = "token";
         String renewedToken = "renewedToken";
-        Token oldToken = new Token(null, stringToken);
 
         Mockito.stub(userAuthService.authenticateUserBaseOnToken(stringToken)).toReturn(new ResponseEntity(HttpStatus.OK));
         Mockito.stub(tokenService.updateExpiration(eq(stringToken), eq(testSecret), any())).toReturn(renewedToken);
-        Mockito.stub(tokenDao.findByStringTokenValue(stringToken)).toReturn(oldToken);
 
         ResponseEntity responseEntity = tokenRenewService.renewTokenExpirationDate(stringToken);
 
         Mockito.verify(userAuthService).authenticateUserBaseOnToken(stringToken);
         Mockito.verify(tokenService).updateExpiration(eq(stringToken), eq(testSecret), any());
-        Mockito.verify(tokenDao).findByStringTokenValue(stringToken);
-        Mockito.verify(tokenDao).updateToken(oldToken, renewedToken);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(renewedToken, responseEntity.getBody());
     }

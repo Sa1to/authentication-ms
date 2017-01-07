@@ -1,7 +1,5 @@
 package com.szymon.service;
 
-import com.szymon.dao.TokenDao;
-import com.szymon.domain.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -23,13 +21,10 @@ public class TokenRenewService {
     @Autowired
     private TokenService tokenService;
 
-    @Autowired
-    private TokenDao tokenDao;
-
     public ResponseEntity renewTokenExpirationDate(String token) {
         ResponseEntity responseEntity = userAuthService.authenticateUserBaseOnToken(token);
 
-        if(responseEntity.getStatusCode() != HttpStatus.OK)
+        if (responseEntity.getStatusCode() != HttpStatus.OK)
             return responseEntity;
 
         Calendar calendar = Calendar.getInstance();
@@ -38,9 +33,6 @@ public class TokenRenewService {
         Date expiration = calendar.getTime();
 
         String renewedToken = tokenService.updateExpiration(token, secret, expiration);
-
-        Token oldToken = tokenDao.findByStringTokenValue(token);
-        tokenDao.updateToken(oldToken, renewedToken);
 
         return new ResponseEntity<>(renewedToken, HttpStatus.OK);
     }
