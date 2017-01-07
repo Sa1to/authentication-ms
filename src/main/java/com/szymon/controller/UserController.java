@@ -32,11 +32,6 @@ public class UserController {
         return userAuthService.authenticateUserBaseOnCredentials(credentials.getLogin(), credentials.getPassword());
     }
 
-    @RequestMapping(value = Uri.LOGOUT, method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity logoutUser(@RequestHeader("Authorization") String token) {
-        return userAuthService.validateAndRemoveToken(token);
-    }
-
     @RequestMapping(value = Uri.REGISTER, method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity registerUser(@RequestBody User user) {
         return registrationValidator.validateUserToRegistration(user);
