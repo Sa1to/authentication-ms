@@ -2,15 +2,13 @@ package com.szymon;
 
 
 import com.szymon.Texts.Responses;
+import com.szymon.Texts.RoleEnum;
 import com.szymon.controller.UserController;
 import com.szymon.dao.ActivationCodeDao;
-import com.szymon.dao.TokenDao;
 import com.szymon.dao.UserDaoImpl;
 import com.szymon.domain.ActivationCode;
 import com.szymon.domain.Credentials;
-import com.szymon.domain.Token;
 import com.szymon.domain.User;
-import com.szymon.Texts.RoleEnum;
 import com.szymon.jwt.JWTFactory;
 import com.szymon.service.UserAuthService;
 import org.junit.After;
@@ -45,9 +43,6 @@ public class IntegrationTests {
 
     @Autowired
     private Datastore datastore;
-
-    @Autowired
-    private TokenDao tokenDao;
 
     @Autowired
     private ActivationCodeDao activationCodeDao;
@@ -94,7 +89,7 @@ public class IntegrationTests {
         userDao.save(user);
         ResponseEntity response = userController.loginUser(credentials);
         String token = response.getBody().toString();
-        assertEquals(token, tokenDao.findByUserId(user.getId()).getToken());
+//        assertEquals(token, tokenDao.findByUserId(user.getId()).getToken());
         assertNotEquals(Responses.WRONG_CREDENTIALS, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -196,34 +191,6 @@ public class IntegrationTests {
     }
 
     @Test
-    public void logoutAuthenticatedUser() {
-        userDao.save(user);
-
-        String tokenString = userController.loginUser(credentials).getBody().toString();
-
-        ResponseEntity responseEntity = userController.logoutUser(tokenString);
-
-        assertNull(tokenDao.findByUserId(user.getId()));
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
-    public void loginAsUserWhenThereIsTokenCreatedForThisUser() {
-        userDao.save(user);
-        String tokenString = userAuthService.createAndSaveToken(user);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        ResponseEntity responseEntity = userController.loginUser(credentials);
-
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertNull(tokenDao.findByStringTokenValue(tokenString));
-        assertEquals(tokenDao.findByUserId(user.getId()).getToken(), responseEntity.getBody());
-    }
-
-    @Test
     public void authenticateUserWithCorrectToken() {
         String tokenString = userAuthService.createAndSaveToken(user);
 
@@ -246,21 +213,16 @@ public class IntegrationTests {
     @Test
     public void authenticateUserWithExpiredToken() {
         String tokenString = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() - 60 * 1000));
-        Token token = new Token(user.getId(), tokenString);
-        tokenDao.save(token);
 
         ResponseEntity responseEntity = userController.authenticateUser(tokenString);
 
         assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
         assertEquals(Responses.TOKEN_EXPIRED, responseEntity.getBody());
-        assertNull(tokenDao.findByStringTokenValue(token.getToken()));
     }
 
     @Test
     public void asUserRenewToken() {
         String tokenString = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() + 60 * 1000));
-        Token token = new Token(user.getId(), tokenString);
-        tokenDao.save(token);
 
         ResponseEntity responseRenew = userController.renewToken(tokenString);
         ResponseEntity responseAuth = userController.authenticateUser(responseRenew.getBody().toString());

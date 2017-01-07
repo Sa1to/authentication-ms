@@ -126,19 +126,6 @@ public class ControllerTests {
     }
 
     @Test
-    public void logoutUser() {
-        String token = "testToken";
-        ResponseEntity expectedResponse = new ResponseEntity<>(HttpStatus.OK);
-        Mockito.stub(userAuthService.validateAndRemoveToken(token)).toReturn(expectedResponse);
-
-        ResponseEntity responseEntity = userController.logoutUser(token);
-
-        Mockito.verify(userAuthService).validateAndRemoveToken(token);
-        assertEquals(expectedResponse.getStatusCode(), responseEntity.getStatusCode());
-        assertEquals(expectedResponse.getBody(), responseEntity.getBody());
-    }
-
-    @Test
     public void authenticateUser() {
         String token = "testToken";
         ResponseEntity expectedResponse = new ResponseEntity<>(HttpStatus.OK);

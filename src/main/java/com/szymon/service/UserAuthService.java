@@ -10,5 +10,4 @@ public interface UserAuthService {
 
     String createAndSaveToken(User user);
 
-    ResponseEntity validateAndRemoveToken(String token);
 }
