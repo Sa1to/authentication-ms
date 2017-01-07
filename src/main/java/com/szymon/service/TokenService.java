@@ -19,7 +19,7 @@ public class TokenService {
                 .parseClaimsJws(token);
     }
 
-    public String updateExpiration(String token, String secret, Date date){
+    public String updateExpiration(String token, String secret, Date date) {
         Jws<Claims> claims = getClaimsFromToken(token, secret);
 
         return Jwts.builder()

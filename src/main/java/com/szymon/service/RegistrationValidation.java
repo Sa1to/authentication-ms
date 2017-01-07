@@ -41,8 +41,7 @@ public class RegistrationValidation implements RegistrationValidator {
             if (userFromDB != null) {
                 return new ResponseEntity<>(Responses.USER_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
             }
-        }
-        catch (NullPointerException e){
+        } catch (NullPointerException e) {
             return new ResponseEntity<>(Responses.USER_FIELDS_LACKING, HttpStatus.BAD_REQUEST);
         }
         userDao.save(user);

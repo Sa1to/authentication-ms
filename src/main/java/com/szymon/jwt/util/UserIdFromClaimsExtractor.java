@@ -1,6 +1,5 @@
 package com.szymon.jwt.util;
 
-import com.szymon.jwt.JWTFactory;
 import com.szymon.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

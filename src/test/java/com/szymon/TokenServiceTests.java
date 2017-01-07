@@ -35,7 +35,7 @@ public class TokenServiceTests {
     }
 
     @Test
-    public void renewToken(){
+    public void renewToken() {
         User user = new User();
         String secret = "secret";
         String jwt = jwtFactory.createJwt(user, secret, new Date(System.currentTimeMillis() + 1 * 60 * 1000));

@@ -16,8 +16,6 @@ import org.mongodb.morphia.query.FieldEnd;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 
-import static org.mockito.Matchers.any;
-
 public class UserDaoTests {
 
     @Mock
